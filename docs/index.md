@@ -65,7 +65,7 @@ Para explorar los diferentes componentes de este trabajo, utilice los siguientes
 
 * *Análisis del diccionario, inspección de datos y validación de hipótesis iniciales.*
 
-🧠 [**Modelos y Aprendizajes del Proceso**](modelos.md)  
+🧠 [**Modelado y Aprendizajes del Proceso**](modelos.md)  
 * *Arquitectura de la red neuronal, optimización de hiperparámetros y métricas de desempeño.*
 * *Hallazgos clave y lecciones aprendidas durante el entrenamiento y ajuste de los modelos.*
 

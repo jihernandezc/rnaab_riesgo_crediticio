@@ -8,13 +8,11 @@
 
 <br>
 
-# 🔍 Exploración y Análisis Descriptivo
-
-El éxito de un modelo de riesgo crediticio no depende únicamente de la complejidad de su algoritmo, sino de la calidad y comprensión de los datos subyacentes. En esta sección, desglosamos el [*Credit Risk Dataset*](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset/data), validamos nuestras hipótesis iniciales y preparamos el terreno para el modelado con Redes Neuronales.
+# Exploración y Análisis Descriptivo
 
 ## 1. Análisis del Diccionario e Inspección de Datos
 
-El conjunto de datos original cuenta con **75 variables** que abarcan información demográfica, financiera y del historial crediticio de los solicitantes. 
+El conjunto de datos original [*Credit Risk Dataset*](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset/data) cuenta con **74 variables** que abarcan información demográfica, financiera y del historial crediticio de los solicitantes. 
 
 ### 1.1 Transformación de la Variable Objetivo (`loan_status`)
 Siguiendo las mejores prácticas de la industria, transformamos la variable multiclase original en una **variable binaria (Target)**:
@@ -28,7 +26,7 @@ Inicialmente, se eliminaron columnas con más del 50% de valores faltantes. Este
 *   Cuando una variable tiene más del 50% de datos faltantes, intentar "completar" (imputar) esos valores con la media, mediana o moda introduce un sesgo masivo. Estaríamos inventando la mitad de la información, lo que puede llevar al modelo a encontrar patrones inexistentes (overfitting al ruido).
 *   Si a la mayoría de los individuos no se les registró esa variable, es probable que no sea un requisito estándar para todos los perfiles crediticios o que el campo sea opcional.
 
-Además, tras inspeccionar el diccionario, se identificó que no todas las variables son aptas para el entrenamiento. A continuación se presentan los criterios de selección y limpieza aplicados:
+Además, tras inspeccionar el diccionario, se identificó que no todas las variables son aptas para el entrenamiento. En la Tabla 1 se presentan los criterios de selección y limpieza aplicados:
 
 <div align="center" markdown="1">
 
@@ -168,12 +166,6 @@ La Figura 4 permite identificar qué variables tienen una relación lineal direc
 1.  **Principales Inductores de Riesgo (Barras Rojas):** La **tasa de interés (`int_rate`)** es el predictor individual más fuerte (0.255). Esto sugiere que el mercado ya aplica una prima de riesgo: a mayor riesgo percibido, mayor tasa, lo que a su vez dificulta el pago. Le siguen el **DTI (0.134)** y el **uso de líneas revolventes (0.100)**, confirmando que el sobreendeudamiento es un precursor del incumplimiento.
 2.  **Factores de Mitigación (Barras Verdes):** El **ingreso anual (`annual_inc`)** y el **balance total de cuentas (`tot_cur_bal`)** presentan correlaciones negativas. Esto indica que niveles más altos de ingresos y de patrimonio actúan como "escudos" o factores de protección que reducen la probabilidad de caer en mora.
 3.  **Señales de Comportamiento:** Variables como el número de consultas en los últimos 6 meses (`inq_last_6mths`) y la morosidad previa (`delinq_2yrs`) muestran una correlación positiva con el riesgo, validando que el comportamiento histórico de búsqueda de crédito y fallos previos son predictores relevantes.
-
----
-
-### **Sugerencia de redacción para el reporte:**
-*“Al combinar ambas gráficas, observamos que el perfil de riesgo está dominado por el costo del dinero (tasas) y la capacidad de pago (DTI e ingresos). La altísima correlación entre el monto del crédito y la cuota mensual sugiere que la carga financiera total es el factor determinante, más allá del capital inicial solicitado.”*
-
 
 ### 2.5 Análisis de Correlación entre Variables
 
