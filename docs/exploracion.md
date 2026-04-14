@@ -88,10 +88,9 @@ Dado que este dataset es histórico (finaliza aproximadamente en 2015-2018), usa
 Uno de los hallazgos más críticos del análisis descriptivo es la distribución de nuestra variable objetivo.
 
 <div style="text-align: center;">
-    <img src="https://github.com/jihernandezc/rnaab_riesgo_crediticio/blob/master/output/figs/fig1_distribucion_target.png?raw=true" width="700" />
+    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig1_distribucion_target.png" width="700" />
     <p><em>Figura 1. Distribución de la variable objetivo</em></p>
 </div>
-
 
 > *Nota: Se observa que hay aproximadamente **3.6 veces más buenos pagadores** que malos pagadores. Este desbalance requiere estrategias específicas de evaluación (como F1-Score o AUC-ROC) en lugar de la precisión simple (Accuracy).*
 
@@ -108,7 +107,7 @@ A continuación se compara cómo se distribuyen las variables numéricas más im
 *   **revol_util — utilización del crédito rotativo**
 
 <div style="text-align: center;">
-    <img src="https://github.com/jihernandezc/rnaab_riesgo_crediticio/blob/master/output/figs/fig2_numericas_vs_target.png?raw=true" width="700" />
+    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig2_numericas_vs_target.png" width="700" />
     <p><em>Figura 2. Distribución de variables numéricas por tipo de pagador</em></p>
 </div>
 
@@ -139,7 +138,7 @@ Las variables que analizaremos son:
 > Acá usamos grade porque no la eliminamos por ser irrelevante, sino porque se codificó con sub_grade, y usar sub_grade acá no es posible porque tiene demasiadas categorías. Sin embargo, el análisis de grade nos da una idea de cómo se relaciona la calificación crediticia con el incumplimiento.
 
 <div style="text-align: center;">
-    <img src="https://github.com/jihernandezc/rnaab_riesgo_crediticio/blob/master/output/figs/fig3_categoricas_vs_target.png?raw=true" width="700" />
+    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig3_categoricas_vs_target.png" width="700" />
     <p><em>Figura 3. Tasa de incumplimiento por variable categórica</em></p>
 </div>
 
@@ -160,7 +159,7 @@ Y el **term** si puede ser una variable muy útil, ya que nos permite analizar q
 La correlación de Pearson nos permite cuantificar la relación lineal entre cada variable numérica y el target. Esto es crucial para identificar cuáles variables tienen mayor poder predictivo y deben ser priorizadas en la ingeniería de características y en la interpretación del modelo.
 
 <div style="text-align: center;">
-    <img src="https://github.com/jihernandezc/rnaab_riesgo_crediticio/blob/master/output/figs/fig4a_correlaciones_target.png?raw=true" width="700" />
+    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig4a_correlaciones_target.png" width="700" />
     <p><em>Figura 4. Correlación de variables numéricas con el target</em></p>
 </div>
 
@@ -183,7 +182,7 @@ El análisis de correlación entre las variables numéricas nos ayuda a identifi
 Esperaríamos encontrar baja correlación entre las variables, debido al proceso de selección y limpieza que se realizó, pero es importante validar esto con un mapa de calor de correlaciones.
 
 <div style="text-align: center;">
-    <img src="https://github.com/jihernandezc/rnaab_riesgo_crediticio/blob/master/output/figs/fig4b_heatmap_correlaciones.png?raw=true" width="700" />
+    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig4b_heatmap_correlaciones.png" width="700" />
     <p><em>Figura 5. Heatmap de correlaciones entre variables relevantes</em></p>
 </div>
 
