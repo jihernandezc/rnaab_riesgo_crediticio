@@ -1,3 +1,6 @@
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <div style="position: sticky; top: 0; background-color: white; padding: 10px 0; border-bottom: 1px solid #ddd; z-index: 999; text-align: center; width: 100%;">
   <a href="index.html" style="text-decoration: none;">🏠 <b>Inicio</b></a> | 
   <a href="exploracion.html" style="text-decoration: none;">🔍 <b>Exploración</b></a> |
@@ -24,11 +27,6 @@ El entrenamiento se configuró con parámetros específicos para garantizar la e
 
 ### Resultados
 
-<div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig5_modelo_base.png" width="700" />
-    <p><em>Figura 1.  Evaluación del modelo base (Regresión Logística)</em></p>
-</div>
-
 <div align="center" markdown="1">
 
 *Tabla 1. Métricas de clasificación del modelo base (Regresión Logística)*
@@ -37,11 +35,17 @@ El entrenamiento se configuró con parámetros específicos para garantizar la e
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Clase 0** | Buen pagador | 0.87 | 0.66 | 0.75 | 41,942 |
 | **Clase 1** | Mal pagador | 0.35 | 0.64 | 0.45 | 11,764 |
-| | | | | | |
 | **Exactitud** | *Accuracy* | | | **0.65** | 53,706 |
 | **Promedio Simple** | *Macro Avg* | 0.61 | 0.65 | 0.60 | 53,706 |
 | **Promedio Ponderado** | *Weighted Avg* | 0.75 | 0.65 | 0.68 | 53,706 |
 
+</div>
+
+<br>    
+
+<div style="text-align: center;">
+    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig5_modelo_base.png" width="700" />
+    <p><em>Figura 1.  Evaluación del modelo base (Regresión Logística)</em></p>
 </div>
 
 De acuerdo con las métricas obtenidas presentadas en la Tabla 1 y la Figura 1, podemos extraer las siguientes conclusiones sobre el rendimiento del modelo de regresión logística:
@@ -125,12 +129,13 @@ El entrenamiento se realizó durante un máximo de **100 épocas** con un tamañ
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Clase 0** | Buen pagador | 0.87 | 0.64 | 0.74 | 41,942 |
 | **Clase 1** | Mal pagador | 0.34 | 0.67 | 0.45 | 11,764 |
-| | | | | | |
 | **Exactitud** | *Accuracy* | | | **0.65** | 53,706 |
 | **Promedio Simple** | *Macro Avg* | 0.61 | 0.65 | 0.60 | 53,706 |
 | **Promedio Ponderado** | *Weighted Avg* | 0.76 | 0.65 | 0.68 | 53,706 |
 
 </div>
+
+<br>
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig6_red_neuronal.png" width="700" />
@@ -188,12 +193,13 @@ Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el pu
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Clase 0** | Buen pagador | 0.87 | 0.66 | 0.75 | 41,942 |
 | **Clase 1** | Mal pagador | 0.35 | 0.65 | 0.46 | 11,764 |
-| | | | | | |
 | **Exactitud** | *Accuracy* | | | **0.66** | 53,706 |
 | **Promedio Simple** | *Macro Avg* | 0.61 | 0.66 | 0.60 | 53,706 |
 | **Promedio Ponderado** | *Weighted Avg* | 0.76 | 0.66 | 0.69 | 53,706 |
 
 </div>
+
+<br>
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig8_red_neuronal_smote.png" width="700" />
@@ -202,9 +208,9 @@ Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el pu
 
 Los resultados obtenidos con la red optimizada utilizando SMOTE, presentados en la Tabla 3 y la Figura 4, revelan los siguientes aprendizajes:
 
-*   **AUC-ROC (0.7126):** Prácticamente idéntico al modelo base y apenas **0.008** por encima de la Regresión Logística.
+*   **AUC-ROC (0.7132):** Prácticamente idéntico al modelo base y apenas **0.0089** por encima de la Regresión Logística.
 *   **Recall (65%) y Precisión (35%):** Las métricas de clasificación se mantienen estancadas en los mismos niveles que el baseline inicial.
-*   **F1-Score (0.45):** No hubo una mejora significativa en el equilibrio entre sensibilidad y precisión.
+*   **F1-Score (0.46):** No hubo una mejora significativa en el equilibrio entre sensibilidad y precisión.
 
 ## 4. Ensamble Híbrido
 
@@ -221,7 +227,6 @@ En lugar de confiar en un solo modelo, combinamos las fortalezas de dos algoritm
 1.  **LightGBM (Gradient Boosting):** Es extremadamente eficiente para encontrar reglas de decisión basadas en umbrales numéricos (por ejemplo: "Si el DTI > 18% y la tasa > 15%, el riesgo sube exponencialmente").
 2.  **Red Neuronal de Nueva Generación:** Diseñamos una red más moderna utilizando la función de activación **Swish** (que permite un flujo de gradiente más suave que ReLU) y **Layer Normalization** para asegurar que el modelo sea robusto ante variaciones en los datos de entrada.
 
-### Ensamble (Blending) y Búsqueda del Umbral
 Combinamos ambos modelos en una proporción de **85% LightGBM y 15% Red Neuronal**. Esta mezcla permite que el modelo de boosting lleve el peso principal de la decisión, mientras que la red neuronal actúa como un "suavizador" que ayuda a generalizar mejor en casos atípicos.
 
 Finalmente, realizamos una **optimización dirigida por el negocio**. En el sector financiero, dejar pasar a un mal pagador es mucho más costoso que rechazar a uno bueno por error. Por ello, buscamos el umbral de decisión exacto que nos garantizara un **Recall del 70%**. Encontramos que al ajustar nuestro umbral de clasificación a **0.20**, el modelo lograba detectar a 7 de cada 10 morosos.
@@ -235,13 +240,14 @@ Finalmente, realizamos una **optimización dirigida por el negocio**. En el sect
 | Métrica | Clase / Promedio | Precisión | Recall | F1-Score | Soporte |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Clase 0** | Buen pagador | 0.88 | 0.62 | 0.73 | 41,942 |
-| **Clase 1** | Mal pagador | 0.34 | **0.70** | 0.46 | 11,764 |
-| | | | | | |
+| **Clase 1** | Mal pagador | 0.34 | **0.70** | 0.46 | 11,764 | 
 | **Exactitud** | *Accuracy* | | | **0.64** | 53,706 |
 | **Promedio Simple** | *Macro Avg* | 0.61 | 0.66 | 0.59 | 53,706 |
 | **Promedio Ponderado** | *Weighted Avg* | 0.76 | 0.64 | 0.67 | 53,706 |
 
 </div>
+
+<br>
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig9_ensamble_optimizado.png" width="700" />
@@ -263,11 +269,7 @@ A pesar de haber triplicado los datos con SMOTE, probado 30 configuraciones de a
 2.  **Rendimientos Decrecientes:** El esfuerzo computacional de implementar SMOTE y Grid Search no se tradujo en una ventaja competitiva real para el negocio. En un entorno productivo, la Regresión Logística podría ser preferible por su simplicidad y menor costo de mantenimiento, dado que ofrece casi el mismo resultado.
 3.  **Incertidumbre Intrínseca:** Existe una posibilidad real de que el incumplimiento crediticio en este portafolio dependa de variables no presentes en el dataset (eventos de vida inesperados, comportamiento psicométrico, etc.), lo que hace que el 0.70 sea el límite natural de precisión con la información disponible.
 
-Por otro lado, aunque el ensamble híbrido alcanzó el rendimiento más alto del proyecto (AUC-ROC de 0.7204), para obtener una mejora de apenas 1.6 puntos porcentuales sobre la Regresión Logística básica, fue necesario:
-
-1.  Implementar procesos de ingeniería de variables complejos (Target Encoding Bayesiano).
-2.  Entrenar modelos de Gradient Boosting con miles de iteraciones.
-3.  Diseñar arquitecturas de red con funciones de activación no estándar (Swish).
+Por otro lado, aunque el ensamble híbrido alcanzó el rendimiento más alto del proyecto (AUC-ROC de 0.7204), para obtener una mejora de apenas **1.6 puntos porcentuales** sobre la Regresión Logística básica, fue necesario: Implementar procesos de ingeniería de variables complejos (Target Encoding Bayesiano), entrenar modelos de Gradient Boosting con miles de iteraciones, y diseñar arquitecturas de red con funciones de activación no estándar (Swish).
 
 Desde una perspectiva de ingeniería, este aumento marginal plantea dudas sobre si la complejidad adicional y el alto costo computacional se justifican en un entorno de producción, donde la latencia y la facilidad de mantenimiento son críticas. Sin embargo, en el sector financiero, incluso una mejora del 1% en el AUC puede traducirse en millones de dólares en ahorros por prevención de fraudes o impagos, lo que a menudo "obliga" a las instituciones a aceptar modelos de alta complejidad.
 
@@ -275,4 +277,4 @@ Es importante destacar que obtener un **AUC entre 0.70 y 0.75** en riesgo credit
 *   **Hand (2009)** describió el fenómeno del *"Flat Maximum Effect"*, explicando que en problemas de clasificación con datos ruidosos (como el crédito), modelos simples suelen rendir casi igual que los complejos porque la estructura de los datos no permite una separación perfecta. 
 *   **Lessmann et al. (2015)**, en un benchmark masivo de algoritmos de scoring, demostraron que las mejoras de las técnicas modernas sobre la regresión logística son a menudo marginales y requieren un esfuerzo de optimización desproporcionado.
 
-Estos aprendizajes nos indican que el modelo construido es robusto dentro de sus limitaciones, pero también nos advierte que **añadir más capas o neuronas no resolverá el problema**. El "techo" de desempeño se ha alcanzado; para superarlo, el siguiente paso lógico no es mejorar la arquitectura, sino enriquecer el dataset con nuevas fuentes de información externa.
+Estos aprendizajes nos indican que el modelo construido es robusto dentro de sus limitaciones, y que el "techo" de desempeño se ha alcanzado; para superarlo, el siguiente paso lógico no es mejorar la arquitectura, sino enriquecer el dataset con nuevas fuentes de información externa.
