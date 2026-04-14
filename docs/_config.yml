@@ -1,0 +1,6 @@
+title: ""
+description: ""
+show_downloads: false
+markdown: kramdown
+kramdown:
+  math_engine: mathjax

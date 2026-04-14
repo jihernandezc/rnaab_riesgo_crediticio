@@ -1,0 +1,15 @@
+---
+---
+@import "{{ site.theme }}";
+
+table {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: auto !important;      /* Esto evita que la tabla ocupe todo el ancho */
+    display: table !important;   /* Fuerza a que se comporte como tabla y no como bloque */
+}
+
+th, td {
+    text-align: center !important; /* Centra el texto dentro de las celdas */
+    padding: 10px;                 /* Les da un poco de aire a las celdas */
+}
