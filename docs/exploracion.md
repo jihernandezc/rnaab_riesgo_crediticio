@@ -228,3 +228,11 @@ El proceso de exploración no solo sirvió para limpiar datos, sino para generar
 3.  **Redundancia con Propósito:** Aprendimos que variables como `loan_amnt` e `installment`, aunque correlacionadas al 95%, deben coexistir en el modelo. La primera mide la severidad de la pérdida potencial para el banco, mientras que la segunda mide la presión mensual sobre el bolsillo del cliente.
 4.  **Desafío del Desbalance (78/22):** La población está sesgada hacia los buenos pagadores. Esto nos enseña que un modelo "perezoso" podría predecir que todos son buenos y tener un 78% de precisión, pero sería inútil para el negocio. El reto del modelado será maximizar el *Recall* (detectar a los malos) sin destruir la rentabilidad.
 5.  **Variables Contraintuitivas:** Descubrimos que la antigüedad laboral (`emp_length`) tiene poco poder discriminatorio. Esto sugiere que, en el mercado actual, tener muchos años en un empleo no garantiza responsabilidad financiera, lo cual rompe un paradigma tradicional del análisis de crédito.
+
+## 5. Referncias
+
+**Gopi, S. (2020, 20 de septiembre).** *How to Prepare Data for Credit Risk Modeling*. Towards Data Science. https://towardsdatascience.com/how-to-prepare-data-for-credit-risk-modeling-5523641882f2/
+
+**Listendata. (2019, agosto).** *A Complete Guide to Credit Risk Modelling*. ListenData. https://www.listendata.com/2019/08/credit-risk-modelling.html
+
+**R.G. (2021).** *Credit Risk Dataset* [Conjunto de datos]. Kaggle. https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset/data

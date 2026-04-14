@@ -263,18 +263,24 @@ Los resultados del ensamble híbrido optimizado, presentados en la Tabla 4 y la 
 
 ## 5. Aprendizajes del Proceso de Modelamiento
 
-A pesar de haber triplicado los datos con SMOTE, probado 30 configuraciones de arquitectura y optimizado los umbrales, el rendimiento no logra despegar del área del 0.70 - 0.71. Esto sugiere varios puntos críticos:
+Tras experimentar con técnicas como el sobremuestreo sintético (**SMOTE**), optimizaciones de arquitectura y ensambles híbridos, el rendimiento del modelo se mantuvo en el rango de **0.70 a 0.72 de AUC-ROC**. Este comportamiento nos lleva a reflexionar sobre la naturaleza de los datos y la complejidad del problema:
 
-1.  **Limitación de la Señal en los Datos:** La similitud entre una Regresión Logística simple y una Red Neuronal compleja indica que las relaciones en este dataset son predominantemente lineales o que el "ruido" en los datos impide capturar patrones más profundos. Los factores sociodemográficos y financieros proporcionados (ingresos, DTI, tasa) solo explican el riesgo hasta cierto punto.
-2.  **Rendimientos Decrecientes:** El esfuerzo computacional de implementar SMOTE y Grid Search no se tradujo en una ventaja competitiva real para el negocio. En un entorno productivo, la Regresión Logística podría ser preferible por su simplicidad y menor costo de mantenimiento, dado que ofrece casi el mismo resultado.
-3.  **Incertidumbre Intrínseca:** Existe una posibilidad real de que el incumplimiento crediticio en este portafolio dependa de variables no presentes en el dataset (eventos de vida inesperados, comportamiento psicométrico, etc.), lo que hace que el 0.70 sea el límite natural de precisión con la información disponible.
+* A pesar de que el ensamble híbrido logró el mejor desempeño (AUC: 0.7204), la mejora respecto a la Regresión Logística básica fue de apenas **1.6 puntos porcentuales**. Este fenómeno se explica mediante el ***"Flat-maximum effect"***. Según **Overstreet et al. (1992)**, en el scoring crediticio existe una robustez inherente donde modelos lineales simples suelen rendir casi a la par de modelos altamente complejos. Esto sugiere que las variables financieras tradicionales (DTI, tasa, ingresos) han entregado toda la "señal" posible, y el ruido restante no puede ser capturado solo con algoritmos más potentes.
 
-Por otro lado, aunque el ensamble híbrido alcanzó el rendimiento más alto del proyecto (AUC-ROC de 0.7204), para obtener una mejora de apenas **1.6 puntos porcentuales** sobre la Regresión Logística básica, fue necesario: Implementar procesos de ingeniería de variables complejos (Target Encoding Bayesiano), entrenar modelos de Gradient Boosting con miles de iteraciones, y diseñar arquitecturas de red con funciones de activación no estándar (Swish).
+* Desde una perspectiva de ingeniería, la implementación de arquitecturas con funciones de activación **Swish** y procesos de **Target Encoding Bayesiano** demandó un costo computacional y de mantenimiento significativamente mayor. No obstante, en el sector financiero, incluso una mejora marginal puede traducirse en ahorros millonarios. Aun así, como bien señalan **Lessmann et al. (2015)** en su estudio comparativo de algoritmos de scoring, las mejoras de las técnicas modernas sobre los modelos lineales suelen ser marginales y requieren un esfuerzo de optimización desproporcionado.
 
-Desde una perspectiva de ingeniería, este aumento marginal plantea dudas sobre si la complejidad adicional y el alto costo computacional se justifican en un entorno de producción, donde la latencia y la facilidad de mantenimiento son críticas. Sin embargo, en el sector financiero, incluso una mejora del 1% en el AUC puede traducirse en millones de dólares en ahorros por prevención de fraudes o impagos, lo que a menudo "obliga" a las instituciones a aceptar modelos de alta complejidad.
+* Aunque un AUC de 0.72 pueda parecer modesto en otras áreas de la IA, en el análisis de riesgo crediticio se considera un desempeño **"Aceptable a Bueno"**. De acuerdo con la escala de **Hosmer et al. (2013)**, un valor por encima de 0.70 indica una capacidad de discriminación adecuada para la toma de decisiones institucionales.
 
-Es importante destacar que obtener un **AUC entre 0.70 y 0.75** en riesgo crediticio es considerado por la industria como un resultado **"Aceptable a Bueno"**. 
-*   **Hand (2009)** describió el fenómeno del *"Flat Maximum Effect"*, explicando que en problemas de clasificación con datos ruidosos (como el crédito), modelos simples suelen rendir casi igual que los complejos porque la estructura de los datos no permite una separación perfecta. 
-*   **Lessmann et al. (2015)**, en un benchmark masivo de algoritmos de scoring, demostraron que las mejoras de las técnicas modernas sobre la regresión logística son a menudo marginales y requieren un esfuerzo de optimización desproporcionado.
+El aprendizaje más valioso de este proceso es que hemos alcanzado el límite de rendimiento con el conjunto de información disponible. El modelo es **robusto y confiable** dentro de sus parámetros, pero los resultados confirman que la ventaja competitiva en el futuro no vendrá de una red neuronal más profunda, sino del enriquecimiento del dataset con fuentes de datos alternativas que capturen la señal que hoy se pierde entre el ruido.
 
-Estos aprendizajes nos indican que el modelo construido es robusto dentro de sus limitaciones, y que el "techo" de desempeño se ha alcanzado; para superarlo, el siguiente paso lógico no es mejorar la arquitectura, sino enriquecer el dataset con nuevas fuentes de información externa.
+## 6. Referencias
+
+**Chawla, N. V., Bowyer, K. W., Hall, L. O., & Kegelmeyer, W. P. (2002).** SMOTE: Synthetic minority over-sampling technique. *Journal of Artificial Intelligence Research*, 16, 321–357. https://doi.org/10.1613/jair.953
+
+**Hosmer, D. W., Lemeshow, S., & Sturdivant, R. X. (2013).** *Applied Logistic Regression* (3ra ed.). John Wiley & Sons.  https://github.com/Drxan/Study/blob/master/Books_Need2Read/David%20W.%20Hosmer%20-%20Applied%20Logistic%20Regression%20-%203rd%20Edition.pdf
+
+**Lessmann, S., Baesens, B., Seow, H. V., & Thomas, L. C. (2015).** Benchmarking state-of-the-art classification algorithms for credit scoring: An update of research. *European Journal of Operational Research*, 247(1), 124–136. https://doi.org/10.1016/j.ejor.2015.05.030
+
+**Overstreet, G. A., Jr., Bradley, E. L., Jr., & Kemp, R. S., Jr. (1992).** The flat-maximum effect and generic linear scoring models: A test. *Journal of the Operational Research Society*, 43(10), 971–981. https://doi.org/10.1057/jors.1992.140
+
+
