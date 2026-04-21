@@ -32,24 +32,17 @@ Además, tras inspeccionar el diccionario, se identificó que no todas las varia
 
 ### Tabla 1. Variables eliminadas y justificación
 
-| Columna | Justificación para eliminarla |
-| :--- | :--- |
-| `id`, `member_id` | Son identificadores únicos aleatorios. No tienen relación con el comportamiento financiero del cliente. |
-| `url` | Es un enlace web. No aporta información sobre el perfil de riesgo. |
-| `desc`, `title` | Son campos de texto libre. Requerirían Procesamiento de Lenguaje Natural (NLP). El campo `purpose` (categórico) ya resume esta información. |
-| `zip_code` | Los primeros 3 dígitos del código postal tienen demasiadas categorías (alta cardinalidad) y están correlacionados con `addr_state`. |
-| `issue_d` | Es la fecha en que se entregó el dinero. No describe al individuo, sino al momento económico (inflación, tasas de ese mes), lo cual puede sesgar el modelo hacia el pasado. |
-| **Fuga de Datos (Leakage)** | **Variables que ocurren después de otorgar el crédito:** |
-| `total_pymnt`, `total_pymnt_inv` | Es el total pagado hasta hoy. Un cliente que ya pagó mucho tendrá un score bajo de riesgo por definición. No sirve para predecir *antes* del préstamo. |
-| `total_rec_prncp`, `total_rec_int`, `total_inc_late_fee` | Capital, intereses y moras recibidos. Esta información se genera a medida que el cliente paga (o deja de pagar). |
-| `recoveries`, `collection_recovery_fee` | Estas variables **solo existen si el cliente ya incumplió**. Si el modelo ve que `recoveries > 0`, sabrá con 100% de certeza que el cliente es "malo", pero esto es trampa (fuga de datos). |
-| `last_pymnt_d`, `last_pymnt_amnt` | Información sobre el último pago realizado. Es información del comportamiento posterior a la decisión. |
-| `last_credit_pull_d` | La fecha más reciente en que se consultó el buró. Cambia constantemente después de dar el crédito. |
-| `next_pymnt_d` | Fecha del próximo pago. Solo relevante para créditos vigentes. |
-| `policy_code` | Generalmente tiene un solo valor (1 o 2) para todo el dataset. Si no varía, no ayuda al modelo a distinguir entre buenos y malos. |
-| `funded_amnt`, `funded_amnt_inv` | A veces el banco aprueba menos de lo que el cliente pidió (`loan_amnt`). Usamos solo `loan_amnt` porque es el riesgo solicitado inicialmente. |
-| `out_prncp`, `out_prncp_inv` | Representan el capital que aún no se ha pagado. En el momento de solicitar el crédito, este valor siempre es igual al monto prestado; si varía, es porque el préstamo ya está en curso, revelando indirectamente si el cliente es "bueno" o "malo" antes de que el modelo prediga. |
-| `grade`, `sub_grade` | Representan la calificación interna asignada por la entidad financiera tras su propio análisis. Incluirlas obligaría al modelo a replicar un juicio previo en lugar de aprender patrones de riesgo primarios, invalidando su uso para nuevos solicitantes que aún no han sido calificados.  |
+| Categoría | Columnas (Variables) | Justificación Técnica de Eliminación |
+| :--- | :--- | :--- |
+| **Identificadores y Ruido** | `id`, `member_id`, `url`, `emp_title`, `desc`, `title` | Son datos únicos o de texto libre. No tienen valor estadístico y requerirían NLP complejo. El campo `purpose` ya resume la intención del crédito. |
+| **Alta Cardinalidad / Sesgo** | `zip_code`, `addr_state` | El código postal y el estado tienen demasiadas categorías. Pueden causar **overfitting** (que el modelo aprenda que un estado es "bueno" solo por azar). |
+| **Fuga de Datos (Leakage) - Pagos** | `total_pymnt`, `total_pymnt_inv`, `total_rec_prncp`, `total_rec_int`, `total_rec_late_fee`, `out_prncp`, `out_prncp_inv` | **Crítico:** Representan dinero ya pagado o saldos pendientes. Esta información solo existe *después* de que el crédito se otorgó. Si se incluyen, el modelo "adivina" el futuro en lugar de predecir el riesgo. |
+| **Fuga de Datos (Leakage) - Incumplimiento** | `recoveries`, `collection_recovery_fee` | Estas variables solo se activan cuando el cliente ya falló. Incluirlas es "hacer trampa", ya que el modelo sabría la respuesta antes de procesar el perfil. |
+| **Fuga de Datos (Leakage) - Fechas** | `issue_d`, `last_pymnt_d`, `last_pymnt_amnt`, `last_credit_pull_d`, `next_pymnt_d`, `earliest_cr_line` | Fechas de eventos que ocurren durante o después del préstamo. Pueden sesgar el modelo hacia periodos económicos específicos (inflación, crisis pasadas) que no se repetirán igual. |
+| **Redundancia Matemática** | `installment`, `funded_amnt`, `funded_amnt_inv` | La cuota (`installment`) es una combinación de monto, tasa y plazo. Usamos `loan_amnt` y `int_rate` por separado para evitar que el modelo se vuelva perezoso con una fórmula fija. |
+| **Sesgo Institucional (Proxy)** | `grade`, `sub_grade` | Son calificaciones que el banco ya asignó. Si las dejamos, el modelo solo aprenderá a "copiar" el criterio del analista humano en lugar de encontrar nuevos patrones en los datos crudos. |
+| **Baja Variabilidad / Rareza** | `policy_code`, `collections_12_mths_ex_med`, `acc_now_delinq`, `tot_coll_amt` | Tienen casi el mismo valor para todos los usuarios (0 o 1). No ayudan a la Red Neuronal a distinguir entre un buen y un mal pagador. |
+| **Complejidad innecesaria** | `tot_cur_bal`, `total_rev_hi_lim`, `revol_bal` | Para una aplicación web sencilla, estas variables añaden dificultad al usuario para responder y pueden estar correlacionadas con el nivel de ingresos y el DTI. |
 
 </div>
 
@@ -67,7 +60,6 @@ Para codificar las variables categóricas, primero validamos si una variable es 
 | :--- | :--- | :--- | :--- |
 | **`term`** | String (" 36 months") | **Numérico (36, 60)** | El plazo es una magnitud física. Un plazo más largo suele implicar mayor riesgo de impago por exposición al tiempo. |
 | **`emp_length`** | String ("10+ years") | **Ordinal (0 a 10)** | Representa estabilidad laboral. "10+" es el valor máximo y "< 1 year" el mínimo. Se mapea a una escala lineal. |
-| **`earliest_cr_line`** | Fecha ("Jan-1985") | **Numérico (Meses)** | Una fecha por sí sola no dice nada. Lo que importa es la **antigüedad crediticia**. Calculamos los meses transcurridos desde esa fecha hasta el presente del dataset. |
 | **`verification_status`** | String | **Nominal (One-Hot)** | Aunque hay niveles (Verified vs Not), no hay una escala numérica lineal clara de riesgo entre ellos. |
 | **`home_ownership`** | String | **Nominal (One-Hot)** | No hay un orden natural. Por ejemplo, "RENT" no es "mejor" que "MORTGAGE" en términos de riesgo. |
 | **`purpose`** / **`addr_state`** | String | **Nominal (One-Hot)** | Son categorías. No hay un orden lógico entre ellas. |
@@ -75,8 +67,7 @@ Para codificar las variables categóricas, primero validamos si una variable es 
 
 </div>
 
->**Sobre la fecha de referencia para `earliest_cr_line`:**
-Dado que este dataset es histórico, usaremos la **fecha máxima detectada en la columna** como "Hoy". Así medimos la antigüedad relativa de cada cliente. Sin embargo, esto asume un punto de corte estático para todos los préstamos. En un escenario real, sería ideal tener la fecha de cada solicitud de crédito para calcular la antigüedad exacta en ese momento. Pero dado el dataset disponible, esta es una aproximación razonable.
+Con base en esta clasificación, se aplicó **One-Hot Encoding** a las variables nominales y una transformación lineal a las variables ordinales. Esto permitió convertir todas las variables en un formato numérico adecuado para el entrenamiento de la Red Neuronal, sin introducir sesgos indebidos ni perder información relevante.
 
 ## 2. Análisis Descriptivo
 
@@ -93,57 +84,54 @@ De la Figura 1 se observa que hay aproximadamente **3.6 veces más buenos pagado
 
 ### 2.2 Análisis de Variables Numéricas vs Target
 
-A continuación se compara cómo se distribuyen las variables numéricas más importantes entre buenos y malos pagadores usando boxplots. Si una variable tiene distribuciones diferentes entre las dos clases, es una buena señal de que será útil para la elaboración del modelo. Las variables analizadas son:
-*   **int_rate — tasa de interés**
-*   **dti — relación deuda/ingreso**
-*   **annual_inc — ingreso anual**
-*   **loan_amnt — monto del crédito**
-*   **installment — cuota mensual**
-*   **revol_util — utilización del crédito rotativo**
+A continuación, se analiza la distribución de las variables clave mediante gráficos de violín, los cuales superan las limitaciones del boxplot tradicional al mostrar la densidad de probabilidad de los datos. Esta visualización es fundamental porque permite identificar no solo los cuartiles, sino también las "panzas" o concentraciones donde se agrupan la mayoría de los usuarios. Variables que muestren formas claramente desplazadas o diferentes entre ambos grupos, son los mejores predictores para nuestra Red Neuronal, mientras que aquellas con siluetas idénticas sugieren una baja capacidad de discriminación.
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig2_numericas_vs_target.png" width="700" />
     <p><em>Figura 2. Distribución de variables numéricas por tipo de pagador</em></p>
 </div>
 
-De la Figura 2, se puede observar que **int_rate** es la señal más clara de riesgo, ya que las cajas del gráfico correspondiente a esta variable para buenos y malos pagadores es la que más separada está la una de la otra, lo cual suele generar mayor confianza en la predicción de un cliente, lo que nos permite analizar que altas tasas de crédito están asociadas al incumplimiento en el pago de las mismas.
+Al analizar la Figura 2, se pueden sacar las siguientes conclusiones sobre el poder de separación de cada variable:
 
-El **dti** también parece separar bien los grupos y sugiere que quienes ya tienen muchas deudas en relación con su ingreso tienen mayor probabilidad de incumplir, pero no es la mejor señal de separación.
+* **int_rate (Tasa de Interés):** La separación entre los "violines" es la más pronunciada del conjunto. La densidad de los malos pagadores se concentra claramente por encima del 15%, mientras que los buenos pagadores tienen su mayor volumen cerca del 12%. Es una señal limpia y potente: el riesgo percibido por el mercado (reflejado en la tasa) es un predictor excelente del riesgo real.
 
-El **annual_inc** muestra que los buenos pagadores ganan más que los malos pagadores pero no es la mejor variable para decidir porque sus medias están muy cercanas y no separa a ambos grupos con claridad.
+* **dti (Relación Deuda/Ingreso):** Muestra una separación visualmente significativa. El violín de los malos pagadores es notablemente más "ancho" en la parte superior (entre 20% y 30%) en comparación con los buenos pagadores. Esto valida que la carga financiera es un motor de incumplimiento, aunque menos drástico que la tasa de interés.
 
-El **loan_amnt** tampoco sirve mucho para el modelo, pero señala que los malos pagadores piden más en sus créditos que los buenos pagadores.
+* **annual_inc (Ingreso Anual):** Gracias al zoom al 99%, ahora vemos que aunque los buenos pagadores tienen una "panza" más prominente en rangos de ingresos altos, la superposición de los cuerpos de ambos violines es masiva. Esto confirma que **el ingreso por sí solo no garantiza el pago**, lo que lo hace una variable de soporte, pero no de decisión primaria.
 
-El **installment** tiene un índice y comportamiento muy similar a la variable anterior lo cual puede indicar correlación entre ambas variables.
+* **revol_util (Utilización Revolvente):** Los malos pagadores tienen una distribución mucho más uniforme hacia arriba, mientras que los buenos pagadores están "pesados" en la base (uso bajo). Es una variable que aporta un matiz importante sobre el comportamiento de consumo.
 
-El **revol_util** señala que los malos pagadores usan más dinero del crédito disponible que quienes son buenos pagadores, aunque la diferencia no es enorme y tampoco servirá mucho como factor diferencial en el modelo.
+* **inq_last_6mths (Consultas recientes):** El violín de los "Buenos pagadores" es extremadamente delgado en la parte superior, concentrándose casi totalmente en 0 consultas. El de los "Malos pagadores" tiene mucha más densidad en 1 y 2 consultas. **Es una señal de alerta temprana excelente.**
+
+Por otro lado, según la evidencia visual de estos gráficos, estas variables aportan poco o generan ruido:
+
+1.  **open_acc (Cuentas abiertas) y total_acc (Total de cuentas):** Los violines son casi **gemelos idénticos**. Las medias ($\mu: 10.9$ vs $11.2$) y las formas de distribución se solapan casi por completo. Podrían descartarse. Tener muchas o pocas cuentas no parece distinguir en absoluto si alguien pagará o no. Mantener ambas solo añade complejidad innecesaria al modelo (colinealidad).
+
+2.  **pub_rec (Registros públicos negativos):** La distribución es casi una línea plana en cero para ambos grupos. Aunque un registro público es malo, hay tan poca variabilidad en los datos (la inmensa mayoría tiene 0) que la Red Neuronal tendrá dificultades para extraer un patrón generalizable.
+
+3.  **delinq_2yrs (Moras en 2 años):** Similar a `pub_rec`, el solapamiento es casi total. La diferencia entre una media de 0.2 y 0.3 es estadísticamente despreciable para un modelo de Deep Learning en este volumen de datos. Podría descartarse sin afectar significativamente la precisión del modelo.
 
 ### 2.3 Análisis de Variables Categóricas vs Target
 
 De la misma manera analizaremos las variables categóricas vs el target, comparando cómo se distribuyen las variables categóricas más importantes entre buenos y malos pagadores usando gráficos de barras. De igual manera, si una variable tiene distribuciones diferentes entre las dos clases, es una buena señal de que será útil para el modelo.
-
-Las variables que analizaremos son:
-*   **initial_list_status — estado inicial de la lista de préstamos**
-*   **purpose — propósito del crédito**
-*   **home_ownership — tipo de vivienda del solicitante**
-*   **verification_status — estado de verificación de ingresos**
-*   **emp_length — antigüedad laboral**
-*   **term — plazo del crédito**
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig3_categoricas_vs_target.png" width="700" />
     <p><em>Figura 3. Tasa de incumplimiento por variable categórica</em></p>
 </div>
 
-Basándonos en la **Figura 7**, se observa que la variable **term** posee el mayor poder de separación del set. Los créditos a **60 meses** presentan una tasa de incumplimiento que casi duplica a los de **36 meses**, confirmando que el horizonte temporal es un factor de riesgo crítico. En cuanto al **purpose**, la variable permite identificar segmentos claramente diferenciados. Los préstamos para **small business** son los más riesgosos, superando ampliamente la media general del 21.9%, mientras que los destinos de **car** y **wedding** muestran ser los más seguros, lo que la convierte en una variable fundamental para el filtrado de solicitudes.
+Al analizar la Figura 3, se observa que la variable **term** es el principal diferenciador: los créditos a **60 meses** presentan una tasa de incumplimiento cercana al 34%, casi duplicando a los de **36 meses** (18%), lo que confirma que el plazo largo es un factor crítico. Por su parte, la variable **purpose** muestra una segmentación muy clara; los préstamos para **small_business** son los más riesgosos (32%), mientras que **car** y **wedding** se sitúan por debajo del 15%, demostrando ser los destinos de fondos más seguros.
 
-La variable **initial_list_status** presenta una ligera diferencia en el comportamiento de pago según el método de listado inicial del préstamo. Aquellos etiquetados como **"w" (whole)** muestran un índice de incumplimiento ligeramente superior a la media y al estado **"f" (fractional)**, lo que sugiere que la modalidad de financiamiento inicial tiene un impacto medible, aunque sutil, en el riesgo.
+Respecto a **verification_status**, se observa nuevamente un comportamiento **contraintuitivo**, donde los perfiles **Verified** tienen mayor mora que los **Not Verified** (24% vs 17%), sugiriendo que el proceso de verificación se aplica con mayor rigor a perfiles que ya se perciben como riesgosos. En **home_ownership**, se valida que la estabilidad patrimonial influye: quienes viven en **RENT** superan el promedio de mora, mientras que aquellos con **MORTGAGE** presentan un mejor comportamiento de pago.
 
-Respecto a **verification_status**, los datos revelan un comportamiento **contraintuitivo**: los clientes con ingresos **Verified** presentan mayor incumplimiento que los **Not Verified**. Esto podría indicar que la verificación se solicita con mayor rigor a perfiles que ya presentan otros indicadores de riesgo, o que los clientes no verificados poseen una solidez financiera que no requiere de validación adicional por parte del banco.
+La variable **initial_list_status** muestra una diferencia sutil pero marcada, donde el estado **"w"** es más propenso al impago que el **"f"**. Finalmente, **emp_length** destaca por ser la variable con **nulo poder discriminativo**, ya que la tasa de mora se mantiene estancada alrededor de la media (21.9%) sin importar si el cliente tiene menos de un año o más de diez de antigüedad.
 
-Por otro lado, **home_ownership** confirma que la estabilidad patrimonial influye en el riesgo; los clientes que viven en **RENT** (alquiler) tienen la tasa de mora más alta, mientras que los que poseen **MORTGAGE** (hipoteca) son más consistentes en sus pagos.
+De lo anterior, se podría considerar elinar estas variables por las siguientes razones:
 
-Finalmente, **emp_length** (antigüedad laboral) se consolida como la variable con **menor poder discriminativo**. Independientemente de los años de experiencia, la tasa de incumplimiento fluctúa mínimamente alrededor de la media, lo que demuestra que, para este modelo, la estabilidad en el empleo no garantiza necesariamente la voluntad o capacidad de pago.
+*   **pymnt_plan:** La categoría **"y"** tiene una tasa de mora altísima (66%), pero solo cuenta con **6 observaciones (n=6)** frente a más de 268,000 de la otra categoría. No es estadísticamente significativa.
+*   **application_type:** La categoría **JOINT** tiene apenas **3 observaciones (n=3)**. Su alto porcentaje de mora es anecdótico y no sirve para generalizar un modelo.
+*   En **home_ownership**, las categorías **ANY** (n=1) y **NONE** (n=48) deben eliminarse o agruparse en "OTHER", ya que su volumen es insuficiente para el análisis.
+*   **emp_length:** Aunque tiene muchos datos, no aporta valor para separar "buenos" de "malos" pagadores. Podría eliminarse para simplificar el modelo sin perder precisión.
 
 ### 2.4 Correlación entre las Variables y el Target
 
@@ -154,11 +142,9 @@ La correlación de Pearson nos permite cuantificar la relación lineal entre cad
     <p><em>Figura 4. Correlación de variables numéricas con el target</em></p>
 </div>
 
-La Figura 4 permite identificar qué variables tienen una relación lineal directa con la probabilidad de impago. Se pueden extraer tres conclusiones clave:
+De la figura 4 podemos notar que la **tasa de interés (`int_rate`)** lidera con 0.255, confirmando que el costo del crédito es la variable que tiene mayor impacto en el riesgo. Le siguen el **DTI (0.134)** y la **utilización del crédito (`revol_util`, 0.100)**; este bloque valida que el estrés financiero por sobreendeudamiento es el principal disparador del impago.
 
-1.  **Principales Inductores de Riesgo (Barras Rojas):** La **tasa de interés (`int_rate`)** es el predictor individual más fuerte (0.255). Esto sugiere que el mercado ya aplica una prima de riesgo: a mayor riesgo percibido, mayor tasa, lo que a su vez dificulta el pago. Le siguen el **DTI (0.134)** y el **uso de líneas revolventes (0.100)**, confirmando que el sobreendeudamiento es un precursor del incumplimiento.
-2.  **Factores de Mitigación (Barras Verdes):** El **ingreso anual (`annual_inc`)** y el **balance total de cuentas (`tot_cur_bal`)** presentan correlaciones negativas. Esto indica que niveles más altos de ingresos y de patrimonio actúan como "escudos" o factores de protección que reducen la probabilidad de caer en mora.
-3.  **Señales de Comportamiento:** Variables como el número de consultas en los últimos 6 meses (`inq_last_6mths`) y la morosidad previa (`delinq_2yrs`) muestran una correlación positiva con el riesgo, validando que el comportamiento histórico de búsqueda de crédito y fallos previos son predictores relevantes.
+Por otro lado, el **ingreso anual (`annual_inc`)** y el **total de cuentas (`total_acc`)** muestran correlaciones negativas. Esto sugiere que la estabilidad financiera y una trayectoria amplia en el sistema actúan como amortiguadores, reduciendo la probabilidad de mora.
 
 ### 2.5 Análisis de Correlación entre Variables
 
@@ -171,27 +157,30 @@ Esperaríamos encontrar baja correlación entre las variables, debido al proceso
     <p><em>Figura 5. Heatmap de correlaciones entre variables relevantes</em></p>
 </div>
 
-Al analizar la Figura 5, se pueden extraer las siguientes conclusiones:
+El mapa de calor de la Figura 5 revela que la mayoría de las variables tienen correlaciones bajas entre sí (cercanas a 0). Esto es un resultado excelente, ya que indica que no hay **multicolinealidad** grave. 
 
-1.  La matriz confirma que la tasa de interés (`int_rate`) tiene una relación moderada con la utilización del crédito (`revol_util`, 0.33) y el DTI (0.18). Esto indica que la tasa de interés "captura" parte del riesgo de otras variables, pero aún mantiene un valor predictivo independiente y único de 0.25 frente al target.
-2.  El ingreso anual (`annual_inc`) muestra correlaciones bajas o moderadas con el resto de las variables (máximo 0.39 con `tot_cur_bal`), lo que significa que aporta información fresca y distinta que no está presente en el monto del préstamo o las tasas de interés.
+* **`revol_util` vs `int_rate` (0.33):** Es la correlación más alta de la matriz. Tiene sentido financiero: los clientes que usan al límite sus tarjetas suelen recibir tasas de interés más altas. Sin embargo, un valor de 0.33 es lo suficientemente bajo para confirmar que ambas variables deben coexistir; la tasa mide el costo del mercado y la utilización mide el comportamiento de consumo.
 
-Además, en la matriz también se observa una correlación casi perfecta (0.95) entre **`loan_amnt` (monto del préstamo)** e **`installment` (cuota mensual)**. Esto estadísticamente nos advierte que ambas variables aportan información redundante. Sin embargo, desde la perspectiva de riesgo representan conceptos distintos:
+* **`annual_inc` vs `loan_amnt` (0.34):** Existe una relación lógica donde personas con mayores ingresos solicitan montos más altos. Al ser una correlación moderada, la red puede distinguir perfectamente entre un "crédito grande para alguien rico" (bajo riesgo) y un "crédito grande para alguien de ingresos medios" (alto riesgo).
 
-1.  **Exposición vs. Capacidad de Pago (Flujo de Caja):**
-    *   **`loan_amnt` (Monto del préstamo):** Representa la **exposición total** del banco. Es la cantidad de capital que está en riesgo de pérdida total (*Loss Given Default*).
-    *   **`installment` (Cuota mensual):** Representa la **presión sobre el flujo de caja** mensual del cliente. Un cliente puede tener una deuda total alta (`loan_amnt`), pero si el plazo es largo, la cuota (`installment`) puede ser manejable. Inversamente, una deuda pequeña con una cuota muy alta puede causar un impago inmediato.
+### 2.6 Eliminación de Variables tras el Análisis Descriptivo y de Correlación
 
-2.  **Captura Implícita del Plazo (`term`):**
-    *   La relación entre el monto y la cuota está determinada por el **plazo** (36 o 60 meses) y la **tasa de interés**. Al mantener ambas, permitimos que la Red Neuronal aprenda la "densidad" del préstamo. Dos préstamos de \$10,000 pueden tener cuotas muy diferentes; esa diferencia es una señal de riesgo que el modelo debe capturar.
+Tras el análisis descriptivo y de correlación, se definieron las variables y categorías específicas que serán eliminadas para optimizar el entrenamiento de la Red Neuronal, evitando el ruido estadístico y problemas de multicolinealidad.
 
-3.  **Resiliencia de las Redes Neuronales:**
-    *   A diferencia de los modelos lineales clásicos, las **Redes Neuronales Artificiales (ANN)** son excelentes manejando variables altamente correlacionadas. A través de sus capas ocultas y el ajuste de pesos, la red puede extraer interacciones no lineales entre ellas (como la proporción cuota/ingreso de forma interna) sin que la multicolinealidad sesgue los coeficientes como ocurriría en una regresión.
+<div align="center" markdown="1">
 
-4.  **Valor Predictivo Complementario:**
-    *   Al observar la gráfica de correlación con el target, `loan_amnt` tiene 0.071 y `installment` 0.055. Aunque parecidos, no son idénticos. Esos "0.016" puntos de diferencia sugieren que cada variable aporta una pizca de información única que, sumada en las capas de la red, mejora la precisión del score final.
+### Tabla 3. Variables eliminadas tras el análisis descriptivo y justificación técnica
 
-Es por esto que a pesar de la alta correlación detectada entre `loan_amnt` e `installment` (0.95), se tomó la decisión de conservar ambas variables para el entrenamiento de la Red Neuronal. 
+| Categoría | Variables / Casos Específicos | Justificación Técnica Post-EDA |
+| :--- | :--- | :--- |
+| **Baja Variabilidad** | `pub_rec`, `delinq_2yrs` | La inmensa mayoría de los registros están en cero. La diferencia en las medias es estadísticamente despreciable para separar grupos con claridad. |
+| **Redundancia / Colinealidad** | `open_acc`, `total_acc` | Sus distribuciones (violines) son prácticamente idénticas. Mantener ambas aporta información redundante que no mejora la discriminación del riesgo. |
+| **Insignificancia Estadística** | `pymnt_plan`, `application_type` | Presentan un desbalance extremo (n < 10 en categorías minoritarias). El modelo podría sobreajustarse a casos anecdóticos en lugar de aprender patrones reales. |
+| **Categorías con n bajo** | `home_ownership` (**ANY**, **NONE**) | Categorías con volumen insuficiente (**ANY** n=1, **NONE** n=48) que no permiten una generalización confiable. Se eliminan para limpiar el ruido en las variables categóricas. |
+| **Nulo Poder Predictivo** | `emp_length` | El análisis de tasas de incumplimiento demostró que la mora es constante (~21.9%) independientemente de la antigüedad laboral. No ayuda a distinguir perfiles. |
+| **Ruido Administrativo** | `initial_list_status` | Aunque presenta una diferencia sutil, responde más a procesos internos de asignación de fondos que a una característica de riesgo del solicitante. |
+
+</div>
 
 ## 3. Planteamiento de Hipótesis
 
@@ -199,28 +188,28 @@ Tras el análisis descriptivo, formalizamos las siguientes hipótesis de riesgo 
 
 <div align="center" markdown="1">
 
-### Tabla 3. Hipótesis de riesgo basadas en el análisis descriptivo
+### Tabla 4. Hipótesis de riesgo basadas en el análisis descriptivo
 
 | Variable | Hallazgo | Hipótesis de Riesgo |
 | :--- | :--- | :--- |
-| `int_rate` | Malos: 16.0% vs Buenos: 13.3% | **Costo del Riesgo:** A mayor tasa de interés, se genera un fenómeno de "selección adversa" y una carga financiera mayor que asfixia al deudor, elevando la probabilidad de impago. |
-| `dti` | Malos: 18.7 vs Buenos: 16.1 | **Capacidad de Pago:** Un DTI elevado indica que el cliente tiene poco margen de maniobra ante imprevistos económicos, haciendo que el nuevo crédito sea difícil de sostener. |
-| `annual_inc` | Malos: \$66k vs Buenos: \$74k | **Efecto Escudo:** Los ingresos altos actúan como un colchón financiero. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
-| `revol_util` | Malos: 59.2% vs Buenos: 53.2% | **Dependencia del Crédito:** Un uso alto de líneas rotativas sugiere que el cliente vive al límite de su capacidad crediticia y utiliza el crédito para gastos corrientes. |
-| `term` | 60 meses tiene > mora | **Exposición Temporal:** Los créditos a largo plazo están sujetos a más eventos de vida (despido, enfermedad), aumentando la incertidumbre del pago final. |
-| `inq_last_6mths` | Correlación positiva (0.053) | **Búsqueda Desesperada:** Un alto número de consultas recientes indica una necesidad urgente de liquidez, lo cual es una señal de alerta (*red flag*) financiera. |
+| `int_rate` | Malos $\mu: 16.0\%$ vs Buenos $\mu: 13.3\%$. Correlación: **0.255**. | El mercado ya identifica el riesgo; tasas altas asfixian al deudor, elevando la probabilidad de impago por carga financiera excesiva. |
+| `dti` | Malos presentan mayor "ancho" entre 20% y 30%. Correlación: **0.134**. | Un DTI elevado indica poco margen de maniobra ante imprevistos, haciendo que el nuevo crédito sea difícil de sostener frente al ingreso. |
+| `inq_last_6mths`|Buenos pagadores se concentran casi totalmente en 0 consultas. Correlación: **0.053**. | Consultas recientes indican una necesidad urgente de liquidez, actuando como una señal de alerta de inestabilidad financiera. |
+| `revol_util` | Malos usan sus líneas de crédito de forma agresiva y constante. | Un uso alto de líneas rotativas sugiere que el cliente vive al límite de su capacidad y usa el crédito para gastos corrientes. |
+| `annual_inc` | Buenos pagadores tienen una densidad más prominente en rangos altos ($\mu: \$74k$). | Ingresos altos actúan como colchón. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
+| `term` | 60 meses duplica la tasa de mora vs 36 meses (34% vs 18%). | Créditos a largo plazo están sujetos a más eventos de vida (despido, enfermedad), aumentando el riesgo de incumplimiento. |
 
 </div>
 
 ## 4. Conclusiones y Aprendizajes del EDA
 
-El proceso de exploración no solo sirvió para limpiar datos, sino para generar aprendizajes estratégicos sobre el fenómeno del riesgo en este portafolio:
+El proceso de exploración no solo sirvió para limpiar datos, sino para generar aprendizajes estratégicos sobre el fenómeno del riesgo para tener en cuenta durante el modelado:
 
-1.  **El "Círculo Vicioso" de la Tasa:** El análisis confirma que la tasa de interés es el predictor más fuerte. Existe un riesgo intrínseco donde el banco, al intentar protegerse cobrando más a los perfiles riesgosos, termina aumentando la probabilidad de que estos incumplan debido al costo de la deuda.
-2.  **Identificación del Perfil Crítico:** El "Mal Pagador" típico no es necesariamente alguien sin ingresos, sino alguien **sobreendeudado**. La combinación de un DTI > 18% y una utilización de tarjetas (`revol_util`) > 60% es una señal mucho más potente que el nivel de ingresos por sí solo.
-3.  **Redundancia con Propósito:** Aprendimos que variables como `loan_amnt` e `installment`, aunque correlacionadas al 95%, deben coexistir en el modelo. La primera mide la severidad de la pérdida potencial para el banco, mientras que la segunda mide la presión mensual sobre el bolsillo del cliente.
-4.  **Desafío del Desbalance (78/22):** La población está sesgada hacia los buenos pagadores. Esto nos enseña que un modelo "perezoso" podría predecir que todos son buenos y tener un 78% de precisión, pero sería inútil para el negocio. El reto del modelado será maximizar el *Recall* (detectar a los malos) sin destruir la rentabilidad.
-5.  **Variables Contraintuitivas:** Descubrimos que la antigüedad laboral (`emp_length`) tiene poco poder discriminatorio. Esto sugiere que, en el mercado actual, tener muchos años en un empleo no garantiza responsabilidad financiera, lo cual rompe un paradigma tradicional del análisis de crédito.
+1.  El análisis confirma que `int_rate` es el predictor más fuerte. Existe un "círculo vicioso" donde el costo de la deuda, impuesto por el riesgo percibido, termina siendo el principal disparador del incumplimiento real.
+2.  El perfil del "Mal Pagador" no se define solo por ganar menos, sino por estar **sobreendeudado**. La combinación de un DTI elevado y una utilización de tarjetas (`revol_util`) alta es una señal más potente que el nivel de ingresos por sí solo.
+3.  Aprendimos que variables tradicionales como la antigüedad laboral (`emp_length`) y el conteo de cuentas (`open_acc`, `total_acc`) tienen un poder discriminatorio nulo, presentando distribuciones casi idénticas entre grupos. Su eliminación simplifica la arquitectura de la red y mejora la experiencia de usuario en la App sin sacrificar precisión.
+4.  El mapa de calor confirmó que el set de variables final es robusto y carece de multicolinealidad grave. Cada variable seleccionada aporta una dimensión única (capacidad, comportamiento o costo), facilitando la convergencia del modelo de Deep Learning.
+5.  Con una población sesgada hacia los buenos pagadores, el reto no será la precisión global, sino la capacidad del modelo para detectar a los "malos" (*Recall*) sin generar un exceso de falsos rechazos que afecten la colocación de créditos.
 
 ## 5. Referencias
 
