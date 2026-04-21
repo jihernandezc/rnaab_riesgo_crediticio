@@ -10,18 +10,54 @@
 
 # Implementación de la Scorecard Crediticia
 
-En el sector financiero, las probabilidades puras ($$0$$ a $$1$$) resultan difíciles de interpretar para los tomadores de decisiones o el cliente final. Por ello, transformamos la salida de nuestro **Ensamble Híbrido** en una escala de puntaje estandarizada mediante la metodología de **Log-Odds**.
+En el sector financiero, las probabilidades puras (0 a 1) resultan difíciles de interpretar para los tomadores de decisiones o el cliente final. Por ello, transformamos la salida de nuestro **Ensamble Híbrido** en una escala de puntaje estandarizada mediante la metodología de **Log-Odds**.
 
 ### Metodología de Cálculo
+
 Para la transformación, aplicamos una configuración estándar de la industria que garantiza la estabilidad y comparabilidad del modelo:
 
-* **Puntos para duplicar la apuesta (PDO):** $$20$$. Seleccionamos un PDO de $$20$$ para lograr una diferenciación clara entre perfiles. Esto significa que cada incremento de $$20$$ puntos reduce a la mitad el riesgo relativo, permitiendo una granularidad suficiente para ajustar tasas de interés sin que el score sea demasiado volátil.
+#### 1. Cálculo de los Odds
+Primero, transformamos la probabilidad de default en la relación de "buenos" frente a "malos" pagadores:
 
-* **Score Base:** $$600$$ puntos (asociado a un *odds* de $$1:1$$). Al fijar los $$600$$ puntos como el umbral donde las probabilidades de ser "buen" o "mal" pagador se igualan, alineamos nuestra herramienta con la arquitectura de modelos tradicionales. Esto facilita la interpretación para analistas acostumbrados a escalas donde el rango $$600$$-$$700$$ marca la frontera de aprobación.
+<div align="center" markdown="1">
 
-* **Rango Escalar:** $$300$$ a $$850$$ puntos. Adoptamos este rango para que el resultado final sea intuitivo y comparable con los indicadores de agencias de crédito internacionales como Experian o Equifax.
+$$\text{Odds} = \frac{1 - p}{p}$$
 
-La fórmula aplicada convierte el riesgo logarítmico en una escala lineal donde, a mayor puntaje, menor es la probabilidad de incumplimiento.
+*Ecuación 1. Cálculo de Odds a partir de la Probabilidad de Default (p)*
+</div>
+
+#### 2. Definición de Parámetros de Escalamiento
+Para mapear estos *odds* a nuestra escala de 300-850 puntos, calculamos dos constantes fundamentales basadas en el **PDO** (Points to Double the Odds) y el **Score Base**:
+
+*   **Factor:** Determina la magnitud del cambio en el puntaje.
+
+<div align="center" markdown="1">
+
+$$\text{Factor} = \frac{PDO}{\ln(2)}$$
+
+*Ecuación 2. Factor de Escalamiento*
+</div>
+
+*   **Offset (Desplazamiento):** Ajusta la escala para que el **Score Base** corresponda a los **Odds Base** definidos.
+
+<div align="center" markdown="1">
+
+$$\text{Offset} = \text{Score}_{\text{base}} - (\text{Factor} \cdot \ln(\text{Odds}_{\text{base}}))$$
+
+*Ecuación 3. Cálculo del Offset para Alinear el Score Base con los Odds Base*
+</div>
+
+#### 3. Fórmula Final del Scorecard
+Combinando los componentes anteriores, la ecuación final que asigna el puntaje a cada cliente es:
+
+<div align="center" markdown="1">
+
+$$\text{Score} = \text{Offset} + \text{Factor} \cdot \ln(\text{Odds})$$
+
+*Ecuación 4. Cálculo del Score Crediticio a partir de los Odds*
+</div>
+
+> **Nota técnica:** En el código, se aplica un truncamiento (*clip*) al resultado final para asegurar que ningún puntaje exceda los límites operativos de $[300, 850]$, manteniendo la consistencia con los estándares de la industria.
 
 ## Análisis del Score en la Población
 
@@ -54,11 +90,11 @@ Para que el puntaje sea útil en el día a día, dividimos a los clientes en 5 n
 
 | Segmento | Score | % Población | Mora Real | Acción Recomendada |
 | :--- | :---: | :---: | :---: | :--- |
-| **Muy bajo riesgo** | $$> 700$$ | $$3.1\%$$ | **$$2.8\%$$** | Aprobación automática y mejores tasas. |
-| **Bajo riesgo** | $$660$$ - $$700$$ | $$24.4\%$$ | **$$8.3\%$$** | Aprobación preferencial. |
-| **Riesgo medio** | $$630$$ - $$660$$ | $$40.4\%$$ | **$$18.6\%$$** | Evaluación manual o pedir garantías. |
-| **Riesgo alto** | $$550$$ - $$630$$ | $$32.1\%$$ | **$$38.3\%$$** | Rechazo o tasas muy altas (castigo). |
-| **Muy alto riesgo** | $$< 550$$ | $$0.0\%^*$$ | **$$100.0\%$$** | Rechazo automático inmediato. |
+| **Muy bajo riesgo** | > 700 | 3.1\% | **2.8\%** | Aprobación automática y mejores tasas. |
+| **Bajo riesgo** | 660 - 700 | 24.4\% | **8.3\%** | Aprobación preferencial. |
+| **Riesgo medio** | 630 - 660 | 40.4\% | **18.6\%** | Evaluación manual o pedir garantías. |
+| **Riesgo alto** | 550 - 630 | 32.1\% | **38.3\%** | Rechazo o tasas muy altas (castigo). |
+| **Muy alto riesgo** | < 550 | 0.0\%^* | **100.0\%** | Rechazo automático inmediato. |
 
 </div>
 
