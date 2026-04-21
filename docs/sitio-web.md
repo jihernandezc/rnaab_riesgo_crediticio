@@ -16,6 +16,7 @@ Accede al sitio web a través del siguiente enlace:
 
 <div align="center">
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://credit-risk-unal.streamlit.app/)
-
+  <a href="https://credit-risk-unal.streamlit.app/" target="_blank">
+    <img src="https://img.shields.io/badge/Streamlit-Visitar_Sitio_Web-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Visitar Sitio Web">
+  </a>
 </div>
