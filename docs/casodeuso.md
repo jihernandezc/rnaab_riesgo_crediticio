@@ -10,16 +10,16 @@
 
 # Implementación de la Scorecard Crediticia
 
-En el sector financiero, las probabilidades puras ($0$ a $1$) resultan difíciles de interpretar para los tomadores de decisiones o el cliente final. Por ello, transformamos la salida de nuestro **Ensamble Híbrido** en una escala de puntaje estandarizada mediante la metodología de **Log-Odds**.
+En el sector financiero, las probabilidades puras ($$0$$ a $$1$$) resultan difíciles de interpretar para los tomadores de decisiones o el cliente final. Por ello, transformamos la salida de nuestro **Ensamble Híbrido** en una escala de puntaje estandarizada mediante la metodología de **Log-Odds**.
 
 ### Metodología de Cálculo
 Para la transformación, aplicamos una configuración estándar de la industria que garantiza la estabilidad y comparabilidad del modelo:
 
-* **Puntos para duplicar la apuesta (PDO):** $20$. Seleccionamos un PDO de $20$ para lograr una diferenciación clara entre perfiles. Esto significa que cada incremento de $20$ puntos reduce a la mitad el riesgo relativo, permitiendo una granularidad suficiente para ajustar tasas de interés sin que el score sea demasiado volátil.
+* **Puntos para duplicar la apuesta (PDO):** $$20$$. Seleccionamos un PDO de $$20$$ para lograr una diferenciación clara entre perfiles. Esto significa que cada incremento de $$20$$ puntos reduce a la mitad el riesgo relativo, permitiendo una granularidad suficiente para ajustar tasas de interés sin que el score sea demasiado volátil.
 
-* **Score Base:** $600$ puntos (asociado a un *odds* de $1:1$). Al fijar los $600$ puntos como el umbral donde las probabilidades de ser "buen" o "mal" pagador se igualan, alineamos nuestra herramienta con la arquitectura de modelos tradicionales. Esto facilita la interpretación para analistas acostumbrados a escalas donde el rango $600$-$700$ marca la frontera de aprobación.
+* **Score Base:** $$600$$ puntos (asociado a un *odds* de $$1:1$$). Al fijar los $$600$$ puntos como el umbral donde las probabilidades de ser "buen" o "mal" pagador se igualan, alineamos nuestra herramienta con la arquitectura de modelos tradicionales. Esto facilita la interpretación para analistas acostumbrados a escalas donde el rango $$600$$-$$700$$ marca la frontera de aprobación.
 
-* **Rango Escalar:** $300$ a $850$ puntos. Adoptamos este rango para que el resultado final sea intuitivo y comparable con los indicadores de agencias de crédito internacionales como Experian o Equifax.
+* **Rango Escalar:** $$300$$ a $$850$$ puntos. Adoptamos este rango para que el resultado final sea intuitivo y comparable con los indicadores de agencias de crédito internacionales como Experian o Equifax.
 
 La fórmula aplicada convierte el riesgo logarítmico en una escala lineal donde, a mayor puntaje, menor es la probabilidad de incumplimiento.
 
@@ -46,51 +46,21 @@ Lo anterior nos permite entender por qué cuesta tanto separar a los buenos paga
 
 ## Segmentación de Riesgo y Estrategia de Negocio
 
-Para transformar el puntaje en una herramienta operativa, hemos dividido la población en cinco segmentos. Es importante destacar que, aunque nuestra escala ($300$-$850$) imita la estética de un score **FICO**, los puntos de corte se han calibrado según el comportamiento real de nuestra muestra y no por estándares externos.
-
-### Comparativa de Segmentos y Rendimiento
-La siguiente tabla detalla cómo se distribuye la población y qué tan efectivo es el score para separar a los buenos de los malos pagadores:
-
-| Segmento | Rango de Score | % Población | Tasa de Incumplimiento | Acción Sugerida |
-| :--- | :---: | :---: | :---: | :--- |
-| **Muy bajo riesgo** | $> 700$ | $3.1\%$ | **$2.8\%$** | Aprobación Automática / Tasas Preferenciales |
-| **Bajo riesgo** | $660$ - $700$ | $24.4\%$ | **$8.3\%$** | Aprobación con Beneficios de Fidelidad |
-| **Riesgo medio** | $630$ - $660$ | $40.4\%$ | **$18.6\%$** | Evaluación Manual / Requiere Garantía |
-| **Riesgo alto** | $550$ - $630$ | $32.1\%$ | **$38.3\%$** | Rechazo o Tasa de Interés de Castigo |
-| **Muy alto riesgo** | $< 550$ | $0.0\%^*$ | **$100.0\%$** | Rechazo Automático Inmediato |
-
-
-
-Aunque el modelo logró identificar el grupo de **Muy alto riesgo** con una precisión del 100%, debemos ser cautelosos: este segmento representa apenas una fracción mínima de nuestra prueba (un único caso detectado). Si bien esto demuestra que el algoritmo es capaz de señalar perfiles de default extremo con gran exactitud, desde un punto de vista estadístico no podemos generalizar este éxito a toda la población hasta contar con una muestra más amplia. Es una señal excelente de precisión, pero la tratamos como un indicador preliminar.
-
-### ¿Por qué estos rangos difieren de un FICO tradicional?
-
-Es común que un score de $640$ sea considerado "aceptable" en una entidad bancaria tradicional, pero en nuestro modelo representa un **Riesgo Medio** con una tasa de incumplimiento del $18.6\%$. Esta diferencia se justifica por tres razones:
-
-1.  **Naturaleza de los Datos:** Trabajamos con datos de *peer-to-peer lending* (LendingClub), donde el perfil de riesgo suele ser más alto que en la banca hipotecaria tradicional. Por eso nuestro modelo se ajusta para ser más estricto donde el riesgo es mayor.
-2.  **Calibración por Desempeño:** Los límites se fijaron analizando la **Figura 8c**. Observamos que el salto de riesgo más agresivo ocurre al bajar de los $630$ puntos (donde la mora casi se duplica al pasar al $38.3\%$). Por lo tanto, el modelo define sus propias fronteras de seguridad basadas en evidencia y no en convenciones.
-3.  **Optimización del Negocio:** Al concentrar el $40.4\%$ de la población en el segmento "Medio", le damos flexibilidad al banco para decidir si asume ese riesgo mediante garantías adicionales, en lugar de rechazar masivamente a clientes que aún tienen un $81.4\%$ de probabilidad de pago.
-
-### Análisis Visual de la Segmentación
-
-
-
-
-
-
-## Segmentación de Riesgo y Estrategia de Negocio
-
 Para que el puntaje sea útil en el día a día, dividimos a los clientes en 5 niveles de riesgo. Es importante mencionar que aunque usamos la escala tradicional de 300 a 850 puntos (FICO), los cortes los calibramos según cómo se comportaron realmente los clientes en este dataset, no por estándares externos.
 
-### Tabla de Segmentación
+<div align="center" markdown="1">
+
+*Tabla 1. Segmentación de Riesgo*
 
 | Segmento | Score | % Población | Mora Real | Acción Recomendada |
 | :--- | :---: | :---: | :---: | :--- |
-| **Muy bajo riesgo** | $> 700$ | $3.1\%$ | **$2.8\%$** | Aprobación automática y mejores tasas. |
-| **Bajo riesgo** | $660$ - $700$ | $24.4\%$ | **$8.3\%$** | Aprobación preferencial. |
-| **Riesgo medio** | $630$ - $660$ | $40.4\%$ | **$18.6\%$** | Evaluación manual o pedir garantías. |
-| **Riesgo alto** | $550$ - $630$ | $32.1\%$ | **$38.3\%$** | Rechazo o tasas muy altas (castigo). |
-| **Muy alto riesgo** | $< 550$ | $0.0\%^*$ | **$100.0\%$** | Rechazo automático inmediato. |
+| **Muy bajo riesgo** | $$> 700$$ | $$3.1\%$$ | **$$2.8\%$$** | Aprobación automática y mejores tasas. |
+| **Bajo riesgo** | $$660$$ - $$700$$ | $$24.4\%$$ | **$$8.3\%$$** | Aprobación preferencial. |
+| **Riesgo medio** | $$630$$ - $$660$$ | $$40.4\%$$ | **$$18.6\%$$** | Evaluación manual o pedir garantías. |
+| **Riesgo alto** | $$550$$ - $$630$$ | $$32.1\%$$ | **$$38.3\%$$** | Rechazo o tasas muy altas (castigo). |
+| **Muy alto riesgo** | $$< 550$$ | $$0.0\%^*$$ | **$$100.0\%$$** | Rechazo automático inmediato. |
+
+</div>
 
 > **Nota sobre el riesgo extremo:** El modelo detectó con 100% de puntería al grupo de "Muy alto riesgo", pero ojo: es una muestra muy pequeña (un solo caso en el test). Es una buena señal de precisión, pero lo tomamos como un indicador preliminar.
 
