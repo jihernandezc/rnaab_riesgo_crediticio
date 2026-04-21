@@ -60,7 +60,7 @@ $$\text{Score} = \text{Offset} + \text{Factor} \cdot \ln(\text{Odds})$$
 *Ecuación 4. Cálculo del Score Crediticio a partir de los Odds*
 </div>
 
-> **Nota técnica:** En el código, se aplica un truncamiento (*clip*) al resultado final para asegurar que ningún puntaje exceda los límites operativos de $[300, 850]$, manteniendo la consistencia con los estándares de la industria.
+> **Nota técnica:** En el código, se aplica un truncamiento (*clip*) al resultado final para asegurar que ningún puntaje exceda los límites operativos de [300, 850], manteniendo la consistencia con los estándares de la industria.
 
 ## Análisis del Score en la Población
 

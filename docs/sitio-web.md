@@ -1,0 +1,21 @@
+<div style="position: sticky; top: 0; background-color: white; padding: 10px 0; border-bottom: 1px solid #ddd; z-index: 999; text-align: center; width: 100%;">
+  <a href="index.html" style="text-decoration: none;">🏠 <b>Inicio</b></a> | 
+  <a href="exploracion.html" style="text-decoration: none;">🔍 <b>Exploración</b></a> |
+  <a href="modelos.html" style="text-decoration: none;">🧠 <b>Modelos</b></a> | 
+  <a href="casodeuso.html" style="text-decoration: none;">🏦 <b>Caso de Uso</b></a> | 
+  <a href="sitio-web.html" style="text-decoration: none;">🌐 <b>Sitio Web</b></a>
+</div>
+
+<br>
+
+# Sitio Web Interactivo y Video Promocional
+
+Para facilitar el uso de nuestro modelo de riesgo crediticio, desarrollamos un sitio web interactivo que permite a los usuarios ingresar sus datos financieros y recibir una evaluación personalizada de su riesgo crediticio. Además, creamos un video promocional que resume el proyecto y destaca su relevancia en el sector financiero.
+
+Accede al sitio web a través del siguiente enlace:
+
+<div align="center">
+
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://credit-risk-unal.streamlit.app/)
+
+</div>
