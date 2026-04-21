@@ -1,3 +1,6 @@
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <div style="position: sticky; top: 0; background-color: white; padding: 10px 0; border-bottom: 1px solid #ddd; z-index: 999; text-align: center; width: 100%;">
   <a href="index.html" style="text-decoration: none;">🏠 <b>Inicio</b></a> | 
   <a href="exploracion.html" style="text-decoration: none;">🔍 <b>Exploración</b></a> |
@@ -90,11 +93,11 @@ Para que el puntaje sea útil en el día a día, dividimos a los clientes en 5 n
 
 | Segmento | Score | % Población | Mora Real | Acción Recomendada |
 | :--- | :---: | :---: | :---: | :--- |
-| **Muy bajo riesgo** | > 700 | 3.1\% | **2.8\%** | Aprobación automática y mejores tasas. |
-| **Bajo riesgo** | 660 - 700 | 24.4\% | **8.3\%** | Aprobación preferencial. |
-| **Riesgo medio** | 630 - 660 | 40.4\% | **18.6\%** | Evaluación manual o pedir garantías. |
-| **Riesgo alto** | 550 - 630 | 32.1\% | **38.3\%** | Rechazo o tasas muy altas (castigo). |
-| **Muy alto riesgo** | < 550 | 0.0\%^* | **100.0\%** | Rechazo automático inmediato. |
+| **Muy bajo riesgo** | > 700 | 3.1% | **2.8%** | Aprobación automática y mejores tasas. |
+| **Bajo riesgo** | 660 - 700 | 24.4% | **8.3%** | Aprobación preferencial. |
+| **Riesgo medio** | 630 - 660 | 40.4% | **18.6%** | Evaluación manual o pedir garantías. |
+| **Riesgo alto** | 550 - 630 | 32.1% | **38.3%** | Rechazo o tasas muy altas (castigo). |
+| **Muy alto riesgo** | < 550 | 0.0%* | **100.0%** | Rechazo automático inmediato. |
 
 </div>
 
