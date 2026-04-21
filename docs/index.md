@@ -39,7 +39,7 @@ Identificación de patrones, valores atípicos (outliers) y relaciones entre var
 
 ### Fase IV: Modelamiento Predictivo y Optimización
 1.  **Modelo de Referencia (Baseline):** Implementación de un modelo de baja complejidad (Regresión Logística) para contrastar el valor agregado de la red neuronal.
-2.  **Arquitectura de Redes Neuronales:** Diseño y optimización de una Red Neuronal medinate diferentes técnicas.
+2.  **Arquitectura de Redes Neuronales:** Diseño y optimización de una Red Neuronal mediante diferentes técnicas.
 3.  **Evaluación Multicriterio:** Uso de métricas como AUC-ROC (capacidad de discriminación), Recall (captura de morosos) y F1-Score (equilibrio de precisión).
 
 ### Fase V: Construcción de la Scorecard
@@ -47,11 +47,11 @@ Identificación de patrones, valores atípicos (outliers) y relaciones entre var
 2.  **Análisis de Atributos:** Identificación de las variables con mayor impacto en el riesgo mediante técnicas de importancia de características (SHAP o pesos del modelo).
 
 ### Fase VI: Desarrollo del Sitio Web
-1.  **Backend:** Integración del modelo entrenado en un entorno de ejecución.
-2.  **Frontend:** Diseño de una interfaz intuitiva donde el usuario ingresa sus datos y recibe:
+1.  Integración del modelo entrenado en un entorno de ejecución.
+2.  Diseño de una interfaz intuitiva donde el usuario ingresa sus datos y recibe:
     * Su puntaje crediticio (Score).
     * Su posición relativa frente a la población general.
-3.  **Visualización:** Gráficas comparativas para mejorar la experiencia del usuario (UX).
+3.  Gráficas comparativas 
 
 ### Fase VII: Comunicación y Difusión
 1.  **Reporte Técnico:** Documentación de cada fase del proyecto, resultados obtenidos y análisis de desempeño.

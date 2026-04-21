@@ -33,8 +33,8 @@ El entrenamiento se configuró con parámetros específicos para garantizar la e
 
 | Métrica | Clase / Promedio | Precisión | Recall | F1-Score | Soporte |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Clase 0** | Buen pagador | 0.87 | 0.66 | 0.75 | 41,942 |
-| **Clase 1** | Mal pagador | 0.35 | 0.64 | 0.45 | 11,764 |
+| **Clase 0** | Buen pagador | 0.87 | 0.65 | 0.75 | 41,942 |
+| **Clase 1** | Mal pagador | 0.34 | 0.64 | 0.45 | 11,764 |
 | **Exactitud** | *Accuracy* | | | **0.65** | 53,706 |
 | **Promedio Simple** | *Macro Avg* | 0.61 | 0.65 | 0.60 | 53,706 |
 | **Promedio Ponderado** | *Weighted Avg* | 0.75 | 0.65 | 0.68 | 53,706 |
@@ -51,8 +51,8 @@ El entrenamiento se configuró con parámetros específicos para garantizar la e
 De acuerdo con las métricas obtenidas presentadas en la Tabla 1 y la Figura 1, podemos extraer las siguientes conclusiones sobre el rendimiento del modelo de regresión logística:
 
 *   A primera vista, un acierto del 65% parece bajo. Sin embargo, debemos considerar que si el modelo fuera "perezoso" y predijera a todos los clientes como **buenos pagadores**, obtendría un **78.1% de accuracy** de forma artificial, pero fallaría en detectar al 100% de los morosos. Por lo tanto, nuestro 65% es más valioso porque realmente está discriminando entre grupos.
-*   El **AUC-ROC de 70.43%** nos indica que existe un **70.43% de probabilidad** de que el modelo asigne un score de riesgo más alto a un mal pagador elegido al azar que a un buen pagador. Es una medida de la capacidad de separación del modelo, independientemente del umbral usado.
-*   El modelo logra detectar satisfactoriamente al **64% de los malos pagadores reales (Recall)**. No obstante, su precisión es baja (35%), lo que significa que muchas personas marcadas como "riesgosas" en realidad terminarían pagando bien. En el contexto bancario, esto indicaría rechazar a algunos buenos pagadores por precaución antes que aprobar a un mal pagador que genere una pérdida total de capital.
+*   El **AUC-ROC de 70.39%** nos indica que existe un **70.39% de probabilidad** de que el modelo asigne un score de riesgo más alto a un mal pagador elegido al azar que a un buen pagador. Es una medida de la capacidad de separación del modelo, independientemente del umbral usado.
+*   El modelo logra detectar satisfactoriamente al **64% de los malos pagadores reales (Recall)**. No obstante, su precisión es baja (34%), lo que significa que muchas personas marcadas como "riesgosas" en realidad terminarían pagando bien. En el contexto bancario, esto indicaría rechazar a algunos buenos pagadores por precaución antes que aprobar a un mal pagador que genere una pérdida total de capital.
 
 ## 2. Redes Neuronales Artificiales (ANN)
 
@@ -128,7 +128,7 @@ El entrenamiento se realizó durante un máximo de **100 épocas** con un tamañ
 | Métrica | Clase / Promedio | Precisión | Recall | F1-Score | Soporte |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Clase 0** | Buen pagador | 0.87 | 0.64 | 0.74 | 41,942 |
-| **Clase 1** | Mal pagador | 0.34 | 0.67 | 0.45 | 11,764 |
+| **Clase 1** | Mal pagador | 0.34 | 0.66 | 0.45 | 11,764 |
 | **Exactitud** | *Accuracy* | | | **0.65** | 53,706 |
 | **Promedio Simple** | *Macro Avg* | 0.61 | 0.65 | 0.60 | 53,706 |
 | **Promedio Ponderado** | *Weighted Avg* | 0.76 | 0.65 | 0.68 | 53,706 |
@@ -144,8 +144,8 @@ El entrenamiento se realizó durante un máximo de **100 épocas** con un tamañ
 
 De la Tabla 2 y la Figura 2, podemos destacar los siguientes aprendizajes sobre el rendimiento de la Red Neuronal Base:
 
-*   **AUC-ROC (0.7133):** Logramos una mejora ligera frente a la regresión logística (0.7043), demostrando una mayor capacidad de discriminación entre ambas clases.
-*   **Recall del Mal Pagador (67%):** El modelo es capaz de identificar a 2 de cada 3 clientes morosos. Este es un resultado positivo para el negocio, ya que priorizamos la captura de riesgo.
+*   **AUC-ROC (0.7129):** Logramos una mejora ligera frente a la regresión logística (0.7039), demostrando una mayor capacidad de discriminación entre ambas clases.
+*   **Recall del Mal Pagador (66%):** El modelo es capaz de identificar a 2 de cada 3 clientes morosos. Este es un resultado positivo para el negocio, ya que priorizamos la captura de riesgo.
 *   **Precisión del Mal Pagador (34%):** Esta es la métrica más baja; indica que, de cada 100 clientes que el modelo marca como "riesgosos", solo 34 realmente terminan incumpliendo. Existe un costo de oportunidad al clasificar a "buenos pagadores" como "malos" (Falsos Positivos).
 *   **F1-Score (0.45):** El equilibrio entre precisión y sensibilidad se mantiene en niveles similares al baseline, lo que confirma que el modelo base de la red todavía tiene margen de mejora.
 *   **Accuracy General (65%):** Aunque es menor que la proporción de la clase mayoritaria (78%), este valor es esperado dado que el modelo está penalizando fuertemente los errores en la clase minoritaria para no ignorar el riesgo.
@@ -181,7 +181,7 @@ Por defecto, una red neuronal clasifica a un cliente como "mal pagador" si la pr
     <p><em>Figura 3.  Métricas vs Umbral de clasificación</em></p>
 </div>
 
-Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el punto donde maximizamos el **F1-Score** (el equilibrio perfecto entre detectar morosos y no perder clientes buenos). Como se observa en la Figura 3, el **umbral óptimo se situó en 0.51**.
+Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el punto donde maximizamos el **F1-Score** (el equilibrio perfecto entre detectar morosos y no perder clientes buenos). Como se observa en la Figura 3, el **umbral óptimo se situó en 0.53**.
 
 ### Resultados de la Red Optimizada con SMOTE
 
@@ -191,10 +191,10 @@ Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el pu
 
 | Métrica | Clase / Promedio | Precisión | Recall | F1-Score | Soporte |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Clase 0** | Buen pagador | 0.87 | 0.66 | 0.75 | 41,942 |
-| **Clase 1** | Mal pagador | 0.35 | 0.65 | 0.46 | 11,764 |
-| **Exactitud** | *Accuracy* | | | **0.66** | 53,706 |
-| **Promedio Simple** | *Macro Avg* | 0.61 | 0.66 | 0.60 | 53,706 |
+| **Clase 0** | Buen pagador | 0.87 | 0.68 | 0.76 | 41,942 |
+| **Clase 1** | Mal pagador | 0.35 | 0.64 | 0.46 | 11,764 |
+| **Exactitud** | *Accuracy* | | | **0.67** | 53,706 |
+| **Promedio Simple** | *Macro Avg* | 0.61 | 0.66 | 0.61 | 53,706 |
 | **Promedio Ponderado** | *Weighted Avg* | 0.76 | 0.66 | 0.69 | 53,706 |
 
 </div>
@@ -208,8 +208,8 @@ Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el pu
 
 Los resultados obtenidos con la red optimizada utilizando SMOTE, presentados en la Tabla 3 y la Figura 4, revelan los siguientes aprendizajes:
 
-*   **AUC-ROC (0.7132):** Prácticamente idéntico al modelo base y apenas **0.0089** por encima de la Regresión Logística.
-*   **Recall (65%) y Precisión (35%):** Las métricas de clasificación se mantienen estancadas en los mismos niveles que el baseline inicial.
+*   **AUC-ROC (0.7135):** Prácticamente idéntico al modelo base y apenas **0.0096** por encima de la Regresión Logística.
+*   **Recall (64%) y Precisión (35%) para la clase 1:** Las métricas de clasificación se mantienen estancadas en los mismos niveles que el baseline inicial.
 *   **F1-Score (0.46):** No hubo una mejora significativa en el equilibrio entre sensibilidad y precisión.
 
 ## 4. Ensamble Híbrido
@@ -256,7 +256,7 @@ Finalmente, realizamos una **optimización dirigida por el negocio**. En el sect
 
 Los resultados del ensamble híbrido optimizado, presentados en la Tabla 4 y la Figura 5, revelan los siguientes aprendizajes clave:
 
-*   **AUC-ROC Final (0.7204):** Es el valor más alto obtenido en todo el proyecto, superando finalmente la barrera del 0.71.
+*   **AUC-ROC Final (0.7188):** Es el valor más alto obtenido en todo el proyecto, aunque no supera la barrera del 0.71.
 *   **Recall Final del Mal Pagador (70.11%):** Logramos cumplir con el objetivo de detectar a la gran mayoría de los clientes riesgosos.
 *   **Precisión (34%):** Se mantiene estable, lo cual es un éxito considerando que aumentamos el Recall (normalmente, al subir el Recall, la precisión cae drásticamente).
 *   **F1-Score (0.46):** Representa el mejor equilibrio logrado entre todas las técnicas probadas.
@@ -269,7 +269,7 @@ Tras experimentar con técnicas como el sobremuestreo sintético (**SMOTE**), op
 
 * Desde una perspectiva de ingeniería, la implementación de arquitecturas con funciones de activación **Swish** y procesos de **Target Encoding Bayesiano** demandó un costo computacional y de mantenimiento significativamente mayor. No obstante, en el sector financiero, incluso una mejora marginal puede traducirse en ahorros millonarios. Aun así, como bien señalan **Lessmann et al. (2015)** en su estudio comparativo de algoritmos de scoring, las mejoras de las técnicas modernas sobre los modelos lineales suelen ser marginales y requieren un esfuerzo de optimización desproporcionado.
 
-* Aunque un AUC de 0.72 pueda parecer modesto en otras áreas de la IA, en el análisis de riesgo crediticio se considera un desempeño **"Aceptable a Bueno"**. De acuerdo con la escala de **Hosmer et al. (2013)**, un valor por encima de 0.70 indica una capacidad de discriminación adecuada para la toma de decisiones institucionales.
+* Aunque un AUC de 0.7188 pueda parecer modesto en otras áreas de la IA, en el análisis de riesgo crediticio se considera un desempeño **"Aceptable a Bueno"**. De acuerdo con la escala de **Hosmer et al. (2013)**, un valor por encima de 0.70 indica una capacidad de discriminación adecuada para la toma de decisiones institucionales.
 
 El aprendizaje más valioso de este proceso es que hemos alcanzado el límite de rendimiento con el conjunto de información disponible. El modelo es **robusto y confiable** dentro de sus parámetros, pero los resultados confirman que la ventaja competitiva en el futuro no vendrá de una red neuronal más profunda, sino del enriquecimiento del dataset con fuentes de datos alternativas que capturen la señal que hoy se pierde entre el ruido.
 

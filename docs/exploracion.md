@@ -49,7 +49,7 @@ Además, tras inspeccionar el diccionario, se identificó que no todas las varia
 | `policy_code` | Generalmente tiene un solo valor (1 o 2) para todo el dataset. Si no varía, no ayuda al modelo a distinguir entre buenos y malos. |
 | `funded_amnt`, `funded_amnt_inv` | A veces el banco aprueba menos de lo que el cliente pidió (`loan_amnt`). Usamos solo `loan_amnt` porque es el riesgo solicitado inicialmente. |
 | `out_prncp`, `out_prncp_inv` | Representan el capital que aún no se ha pagado. En el momento de solicitar el crédito, este valor siempre es igual al monto prestado; si varía, es porque el préstamo ya está en curso, revelando indirectamente si el cliente es "bueno" o "malo" antes de que el modelo prediga. |
-| `grade`| Es una versión simplificada de `sub_grade`. Al mantener ambas, introducimos información redundante que no añade poder predictivo a la Red Neuronal y puede complicar la interpretación de los coeficientes en la scorecard final. |
+| `grade`, `sub_grade` | Representan la calificación interna asignada por la entidad financiera tras su propio análisis. Incluirlas obligaría al modelo a replicar un juicio previo en lugar de aprender patrones de riesgo primarios, invalidando su uso para nuevos solicitantes que aún no han sido calificados.  |
 
 </div>
 
@@ -66,7 +66,6 @@ Para codificar las variables categóricas, primero validamos si una variable es 
 | Variable | Tipo de Dato Original | Tratamiento Propuesto | Justificación |
 | :--- | :--- | :--- | :--- |
 | **`term`** | String (" 36 months") | **Numérico (36, 60)** | El plazo es una magnitud física. Un plazo más largo suele implicar mayor riesgo de impago por exposición al tiempo. |
-| **`grade`** | String ("A1", "B2") | **Ordinal (1 a 35)** | Representa el riesgo asignado por el analista. Hay un orden jerárquico claro donde A1 < A2 < ... < G5. |
 | **`emp_length`** | String ("10+ years") | **Ordinal (0 a 10)** | Representa estabilidad laboral. "10+" es el valor máximo y "< 1 year" el mínimo. Se mapea a una escala lineal. |
 | **`earliest_cr_line`** | Fecha ("Jan-1985") | **Numérico (Meses)** | Una fecha por sí sola no dice nada. Lo que importa es la **antigüedad crediticia**. Calculamos los meses transcurridos desde esa fecha hasta el presente del dataset. |
 | **`verification_status`** | String | **Nominal (One-Hot)** | Aunque hay niveles (Verified vs Not), no hay una escala numérica lineal clara de riesgo entre ellos. |
@@ -76,8 +75,8 @@ Para codificar las variables categóricas, primero validamos si una variable es 
 
 </div>
 
-**Sobre la fecha de referencia para `earliest_cr_line`:**
-Dado que este dataset es histórico (finaliza aproximadamente en 2015-2018), usaremos la **fecha máxima detectada en la columna** como "Hoy". Así medimos la antigüedad relativa de cada cliente. Sin embargo, esto asume un punto de corte estático para todos los préstamos. En un escenario real, sería ideal tener la fecha de cada solicitud de crédito para calcular la antigüedad exacta en ese momento. Pero dado el dataset disponible, esta es una aproximación razonable.
+>**Sobre la fecha de referencia para `earliest_cr_line`:**
+Dado que este dataset es histórico, usaremos la **fecha máxima detectada en la columna** como "Hoy". Así medimos la antigüedad relativa de cada cliente. Sin embargo, esto asume un punto de corte estático para todos los préstamos. En un escenario real, sería ideal tener la fecha de cada solicitud de crédito para calcular la antigüedad exacta en ese momento. Pero dado el dataset disponible, esta es una aproximación razonable.
 
 ## 2. Análisis Descriptivo
 
@@ -90,9 +89,7 @@ Uno de los hallazgos más críticos del análisis descriptivo es la distribució
     <p><em>Figura 1. Distribución de la variable objetivo</em></p>
 </div>
 
-> *Nota: Se observa que hay aproximadamente **3.6 veces más buenos pagadores** que malos pagadores. Este desbalance requiere estrategias específicas de evaluación (como F1-Score o AUC-ROC) en lugar de la precisión simple (Accuracy).*
-
----
+De la Figura 1 se observa que hay aproximadamente **3.6 veces más buenos pagadores** que malos pagadores. Este desbalance requiere estrategias específicas de evaluación (como F1-Score o AUC-ROC) en lugar de la precisión simple (Accuracy).*
 
 ### 2.2 Análisis de Variables Numéricas vs Target
 
@@ -126,31 +123,27 @@ El **revol_util** señala que los malos pagadores usan más dinero del crédito 
 De la misma manera analizaremos las variables categóricas vs el target, comparando cómo se distribuyen las variables categóricas más importantes entre buenos y malos pagadores usando gráficos de barras. De igual manera, si una variable tiene distribuciones diferentes entre las dos clases, es una buena señal de que será útil para el modelo.
 
 Las variables que analizaremos son:
-*   **grade — calificación crediticia del préstamo**
+*   **initial_list_status — estado inicial de la lista de préstamos**
 *   **purpose — propósito del crédito**
 *   **home_ownership — tipo de vivienda del solicitante**
 *   **verification_status — estado de verificación de ingresos**
 *   **emp_length — antigüedad laboral**
 *   **term — plazo del crédito**
 
-> Acá usamos grade porque no la eliminamos por ser irrelevante, sino porque se codificó con sub_grade, y usar sub_grade acá no es posible porque tiene demasiadas categorías. Sin embargo, el análisis de grade nos da una idea de cómo se relaciona la calificación crediticia con el incumplimiento.
-
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig3_categoricas_vs_target.png" width="700" />
     <p><em>Figura 3. Tasa de incumplimiento por variable categórica</em></p>
 </div>
 
-Basándonos en la Figura 3, podemos deducir que **grade** es la variable categórica con mayor poder de separación pues tiene una tendencia marcada de que mientras mayor sea el grado (más cercano a G) mayor será la probabilidad de que el cliente incumpla con el pago de su crédito.
+Basándonos en la **Figura 7**, se observa que la variable **term** posee el mayor poder de separación del set. Los créditos a **60 meses** presentan una tasa de incumplimiento que casi duplica a los de **36 meses**, confirmando que el horizonte temporal es un factor de riesgo crítico. En cuanto al **purpose**, la variable permite identificar segmentos claramente diferenciados. Los préstamos para **small business** son los más riesgosos, superando ampliamente la media general del 21.9%, mientras que los destinos de **car** y **wedding** muestran ser los más seguros, lo que la convierte en una variable fundamental para el filtrado de solicitudes.
 
-**Purpose** muestra que los créditos para **small bussiness** son los más riesgosos y que para **wedding** y **car** son los más seguros, también aparenta ser una buena variable para separar ambos casos.
+La variable **initial_list_status** presenta una ligera diferencia en el comportamiento de pago según el método de listado inicial del préstamo. Aquellos etiquetados como **"w" (whole)** muestran un índice de incumplimiento ligeramente superior a la media y al estado **"f" (fractional)**, lo que sugiere que la modalidad de financiamiento inicial tiene un impacto medible, aunque sutil, en el riesgo.
 
-El **home_ownership** parece ser más estable por lo que es más riesgoso para nuestro modelo tomar decisiones basadas en dicha variable.
+Respecto a **verification_status**, los datos revelan un comportamiento **contraintuitivo**: los clientes con ingresos **Verified** presentan mayor incumplimiento que los **Not Verified**. Esto podría indicar que la verificación se solicita con mayor rigor a perfiles que ya presentan otros indicadores de riesgo, o que los clientes no verificados poseen una solidez financiera que no requiere de validación adicional por parte del banco.
 
-**verification_status** suele tener un comportamiento similar a la anterior variable y parece que la clasificación es contraintuitiva puesto que los clientes con ingresos **verified** presentan más incumplimiento.
+Por otro lado, **home_ownership** confirma que la estabilidad patrimonial influye en el riesgo; los clientes que viven en **RENT** (alquiler) tienen la tasa de mora más alta, mientras que los que poseen **MORTGAGE** (hipoteca) son más consistentes en sus pagos.
 
-**emp_length** Es la variable con menor poder discriminativo de todas debido a la similitud presentada en todos los posibles valores de la misma con respecto a la media.
-
-Y el **term** si puede ser una variable muy útil, ya que nos permite analizar que los créditos a 60 meses presetan mayor índice de incumplimiento frente a los créditos a 32 meses, lo cual suena bastante lógico.
+Finalmente, **emp_length** (antigüedad laboral) se consolida como la variable con **menor poder discriminativo**. Independientemente de los años de experiencia, la tasa de incumplimiento fluctúa mínimamente alrededor de la media, lo que demuestra que, para este modelo, la estabilidad en el empleo no garantiza necesariamente la voluntad o capacidad de pago.
 
 ### 2.4 Correlación entre las Variables y el Target
 
@@ -211,7 +204,7 @@ Tras el análisis descriptivo, formalizamos las siguientes hipótesis de riesgo 
 | Variable | Hallazgo | Hipótesis de Riesgo |
 | :--- | :--- | :--- |
 | `int_rate` | Malos: 16.0% vs Buenos: 13.3% | **Costo del Riesgo:** A mayor tasa de interés, se genera un fenómeno de "selección adversa" y una carga financiera mayor que asfixia al deudor, elevando la probabilidad de impago. |
-| `dti` | Malos: 18.6 vs Buenos: 16.1 | **Capacidad de Pago:** Un DTI elevado indica que el cliente tiene poco margen de maniobra ante imprevistos económicos, haciendo que el nuevo crédito sea difícil de sostener. |
+| `dti` | Malos: 18.7 vs Buenos: 16.1 | **Capacidad de Pago:** Un DTI elevado indica que el cliente tiene poco margen de maniobra ante imprevistos económicos, haciendo que el nuevo crédito sea difícil de sostener. |
 | `annual_inc` | Malos: \$66k vs Buenos: \$74k | **Efecto Escudo:** Los ingresos altos actúan como un colchón financiero. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
 | `revol_util` | Malos: 59.2% vs Buenos: 53.2% | **Dependencia del Crédito:** Un uso alto de líneas rotativas sugiere que el cliente vive al límite de su capacidad crediticia y utiliza el crédito para gastos corrientes. |
 | `term` | 60 meses tiene > mora | **Exposición Temporal:** Los créditos a largo plazo están sujetos a más eventos de vida (despido, enfermedad), aumentando la incertidumbre del pago final. |
@@ -229,7 +222,7 @@ El proceso de exploración no solo sirvió para limpiar datos, sino para generar
 4.  **Desafío del Desbalance (78/22):** La población está sesgada hacia los buenos pagadores. Esto nos enseña que un modelo "perezoso" podría predecir que todos son buenos y tener un 78% de precisión, pero sería inútil para el negocio. El reto del modelado será maximizar el *Recall* (detectar a los malos) sin destruir la rentabilidad.
 5.  **Variables Contraintuitivas:** Descubrimos que la antigüedad laboral (`emp_length`) tiene poco poder discriminatorio. Esto sugiere que, en el mercado actual, tener muchos años en un empleo no garantiza responsabilidad financiera, lo cual rompe un paradigma tradicional del análisis de crédito.
 
-## 5. Referncias
+## 5. Referencias
 
 **Gopi, S. (2020, 20 de septiembre).** *How to Prepare Data for Credit Risk Modeling*. Towards Data Science. https://towardsdatascience.com/how-to-prepare-data-for-credit-risk-modeling-5523641882f2/
 
