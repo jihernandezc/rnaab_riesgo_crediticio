@@ -72,14 +72,14 @@ Tras aplicar el modelo al conjunto de prueba, observamos lo siguiente:
 </div>
 
 ### Estadísticas Clave del Modelo:
-*   **Score Mínimo:** 549.9
-*   **Score Máximo:** 767.7
-*   **Media General:** 644.1
-*   **Mediana:** 643.4
+*   **Score Mínimo:** 528.5
+*   **Score Máximo:** 685.6
+*   **Media General:** 605.0
+*   **Mediana:** 604.2
 
 Como se observa en los boxplots de la **Figura 1**, aunque existe una diferencia entre las medias, esta no es tan pronunciada:
-*   **Buen pagador (Promedio):** 648.7 puntos.
-*   **Mal pagador (Promedio):** 627.6 puntos.
+*   **Buen pagador (Promedio):** 608.5 puntos.
+*   **Mal pagador (Promedio):** 592.7 puntos.
 
 Lo anterior nos permite entender por qué cuesta tanto separar a los buenos pagadores de los malos pagadores y es que sus distribuciones están solapadas en gran parte del tramo de los scores, lo cual influye en el resultado de las predicciones del modelo.
 
@@ -91,22 +91,21 @@ Para que el puntaje sea útil en el día a día, dividimos a los clientes en 5 n
 
 *Tabla 1. Segmentación de Riesgo*
 
-| Segmento | Score | % Población | Mora Real | Acción Recomendada |
+| Segmento | Rango de Score | % Población | Mora Observada | Acción Recomendada |
 | :--- | :---: | :---: | :---: | :--- |
-| **Muy bajo riesgo** | > 700 | 3.1% | **2.8%** | Aprobación automática y mejores tasas. |
-| **Bajo riesgo** | 660 - 700 | 24.4% | **8.3%** | Aprobación preferencial. |
-| **Riesgo medio** | 630 - 660 | 40.4% | **18.6%** | Evaluación manual o pedir garantías. |
-| **Riesgo alto** | 550 - 630 | 32.1% | **38.3%** | Rechazo o tasas muy altas (castigo). |
-| **Muy alto riesgo** | < 550 | 0.0%* | **100.0%** | Rechazo automático inmediato. |
+| **Muy bajo riesgo** | **> 640** | 7% | **4%** | Aprobación inmediata y tasas preferenciales. Zona de alta densidad de buenos pagadores. |
+| **Bajo riesgo** | **615 - 640** | 25.2% | **10.5%** | Aprobación estándar. El volumen de "buenos pagadores" supera ampliamente al de "malos". |
+| **Riesgo medio** | **590 - 615** | **40.5%** | **20.8%** | Zona crítica de solapamiento. Requiere validación de ingresos o garantías adicionales. |
+| **Riesgo alto** | **565 - 590** | 24.7% | **36.6** | Mayor densidad de "malos pagadores" que de "buenos". Tasas de castigo o rechazo. |
+| **Muy alto riesgo** | **< 565** | 2.6% | **57.9%** | Rechazo automático. Representa la cola izquierda donde la probabilidad de mora es máxima. |
 
 </div>
 
-> **Nota sobre el riesgo extremo:** El modelo detectó con 100% de puntería al grupo de "Muy alto riesgo", pero ojo: es una muestra muy pequeña (un solo caso en el test). Es una buena señal de precisión, pero lo tomamos como un indicador preliminar.
+Si comparamos estos resultados con un score crediticio tradicional (donde 640 suele ser un puntaje bajo o regular), en nuestro modelo un **640** es en realidad un puntaje **excelente**, ubicando al cliente en el segmento de **Muy Bajo Riesgo**. Esta diferencia en la escala ocurre por dos razones clave:
 
-Si se compara con un score tradicional, por ejemplo un score de **640**, podría considerarse "aceptable". Pero en nuestro modelo, ese cliente ya está en **Riesgo Medio** con casi un 19% de probabilidad de impago. Esto pasa por dos razones clave:
+1.  Los datos provienen de *peer-to-peer lending* (LendingClub), un mercado con perfiles de riesgo más volátiles que la banca hipotecaria tradicional. El modelo ha mapeado el éxito dentro de este ecosistema específico, donde alcanzar un score superior a **640** indica una solidez financiera excepcional frente al promedio de la muestra (605).
 
-1.  Los datos vienen de LendingClub (*peer-to-peer lending*), donde el riesgo suele ser mayor que en un crédito hipotecario tradicional, entonces el modelo aprendió a ser más precavido.
-2.  Notamos que al bajar de los 630 puntos, la mora se duplica (pasa de 18% a 38%). Ahí es donde el modelo marca una frontera de seguridad clara: por debajo de eso, el riesgo deja de ser manejable.
+2.  Notamos que al bajar de los **590 puntos**, entramos en el "valle de la mora". En este punto, la densidad de malos pagadores (color rojo en la Figura 1) empieza a ganar terreno rápidamente sobre los buenos pagadores. El modelo marca una frontera de seguridad clara en los **615 puntos**: por encima de este valor, la probabilidad de éxito es significativamente mayor, mientras que por debajo, el riesgo se vuelve errático y difícil de manejar.
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig8_segmentacion_riesgo.png" width="900" />
@@ -117,14 +116,14 @@ Como se observa en la **Figura 2a**, el modelo logra una distribución balancead
 
 ## ¿Qué mueve el Score?
 
-Utilizando los pesos del modelo, identificamos qué variables tienen mayor impacto en el movimiento del puntaje de un cliente:
+Como en las Redes Neuronales no podemos ver los coeficientes así de fácil como en una regresión, usamos **Permutación**: básicamente agarramos una variable (digamos, el ingreso) y le desordenamos todos los datos al azar para dejarla inservible. Si al hacer esto el rendimiento del modelo (AUC-ROC) se desploma, confirmamos que esa variable era fundamental. Si el modelo ni se inmuta, es que esa variable no estaba aportando información útil para predecir el impago.
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig10_importancia_variables.png" width="900" />
     <p><em>Figura 3. Impacto de Variables en el Score</em></p>
 </div>
 
-De la **Figura 3** se desprende que el **DTI (Relación Deuda/Ingreso)** es el factor más crítico para determinar el riesgo crediticio. Clientes con un DTI alto son vistos como sobreendeudados, lo que asfixia su capacidad de pago y reduce drásticamente su score. En contraste, variables como la **Antigüedad Crediticia** y el **Ingreso Anual** actúan como colateral natural, elevando el puntaje y reduciendo la probabilidad de incumplimiento.
+De la **Figura 3** se desprende que **`int_rate` (Tasa de interés):** es el factor más crítico para determinar el riesgo crediticio, seguida de **`annual_inc` (Ingreso anual);** el modelo depende de este dato para entender la capacidad de respuesta económica del cliente. El tercer lugar lo ocupa **`loan_amnt` (Monto del préstamo)** ya que la red le da mucho peso a qué tan grande es la deuda que se está asumiendo. **`dti` y `term`** son las siguientes en la lista. El modelo las usa para medir la presión financiera mensual y el tiempo de exposición al riesgo (3 o 5 años).
 
 # Casos de Uso
 
@@ -167,123 +166,129 @@ El modelo de riesgo crediticio no opera en el vacío: detrás de cada predicció
 
 <div class="cases-grid">
 
-  <!-- CASO 1: ACIERTO -->
-<div class="case-card">
-  <div class="case-header">
-    <div class="avatar" style="background:#dbeafe;color:#1d4ed8;">ML</div>
-    <div class="case-meta">
-      <p class="case-name">María López <span style="font-size: 0.8em; color: #666;">(ID: 227402)</span></p>
-      <p class="case-role">Consolidación de deuda · 1 año antig. · DTI: 8.14%</p>
+<!-- CASO 1: ERROR (Falso Positivo de Riesgo) -->
+<div class="case-card" style="font-family: sans-serif; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; max-width: 600px; margin-bottom: 20px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+  <div class="case-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+    <div class="avatar" style="background:#fee2e2; color:#991b1b; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">ML</div>
+    <div class="case-meta" style="flex-grow: 1;">
+      <p class="case-name" style="margin: 0; font-weight: bold; font-size: 1.1em;">María López <span style="font-size: 0.8em; color: #666; font-weight: normal;">(ID: 118663)</span></p>
+      <p class="case-role" style="margin: 0; font-size: 0.85em; color: #4b5563;">Propósito: Otros · Int: 24.08% · DTI: 2.05%</p>
     </div>
-    <span class="badge badge-low">Bajo riesgo</span>
+    <span class="badge" style="background:#fee2e2; color:#991b1b; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase;">Riesgo alto</span>
   </div>
   <div class="case-body">
-    <div class="case-context">
-      <p>María solicitó un crédito para <strong>consolidar sus deudas</strong>. A pesar de llevar solo un año en su empleo actual, su baja relación deuda/ingreso (DTI) del 8.14% fue una señal positiva de salud financiera.</p>
-      <p>Con un score sólido de <strong>686 puntos</strong>, el modelo la clasificó como un perfil confiable dentro del segmento de bajo riesgo, permitiendo una aprobación ágil.</p>
+    <div class="case-context" style="font-size: 0.9em; color: #374151; line-height: 1.5; margin-bottom: 15px;">
+      <p>María fue clasificada como Riesgo Alto principalmente por su <strong>utilización revolvente del 82.80%</strong> y una tasa de interés elevada. El modelo interpretó el alto uso de crédito como una señal de peligro.</p>
+      <p>Sin embargo, con un score de <strong>590 puntos</strong>, el sistema no valoró suficientemente su bajísimo DTI (2.05%), lo que indicaba que tenía capacidad de pago de sobra.</p>
     </div>
-    <div class="case-metrics">
-      <div class="metric-row">
-        <span class="metric-label">Score crediticio</span>
-        <span class="metric-value">686 pts</span>
+    <div class="case-metrics" style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+      <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Score crediticio</span>
+        <span class="metric-value" style="font-weight: bold;">590 pts</span>
       </div>
-      <div class="score-bar-wrap">
-        <div class="score-track"><div class="score-fill" style="width:70%;background:#3b82f6;"></div></div>
-        <div class="score-labels"><span>300</span><span>600</span><span>850</span></div>
+      <div class="score-bar-wrap" style="margin-bottom: 12px;">
+        <div class="score-track" style="background: #e5e7eb; height: 8px; border-radius: 4px; position: relative;">
+          <div class="score-fill" style="width:53%; background:#ef4444; height: 100%; border-radius: 4px;"></div>
+        </div>
+        <div class="score-labels" style="display: flex; justify-content: space-between; font-size: 0.7em; color: #9ca3af; margin-top: 4px;"><span>300</span><span>600</span><span>850</span></div>
       </div>
-      <div class="metric-row">
-        <span class="metric-label">Segmento detectado</span>
-        <span class="metric-value" style="color:#1d4ed8;">Bajo Riesgo</span>
+      <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Segmento detectado</span>
+        <span class="metric-value" style="color:#991b1b; font-weight: bold;">Riesgo Alto</span>
       </div>
-      <div class="metric-row">
-        <span class="metric-label">Resultado real</span>
-        <span class="metric-value" style="color:#166534;">Buen pagador</span>
+      <div class="metric-row" style="display: flex; justify-content: space-between; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Resultado real</span>
+        <span class="metric-value" style="color:#166534; font-weight: bold;">Buen pagador</span>
       </div>
     </div>
   </div>
-  <div class="verdict">
-    <div class="verdict-icon icon-ok">✓</div>
-    <span><strong>ACIERTO:</strong> El scorecard interpretó correctamente la estabilidad de María a pesar de su corta antigüedad laboral, validando que un DTI bajo es un fuerte mitigador de riesgo.</span>
+  <div class="verdict" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: flex-start; font-size: 0.85em;">
+    <div class="verdict-icon" style="color: #ef4444; font-weight: bold;">❌</div>
+    <span><strong>ERROR:</strong> El modelo falló al predecir un impago que no ocurrió. La alta utilización oscureció la realidad de un cliente con ingresos muy superiores a sus deudas (DTI bajo).</span>
   </div>
 </div>
 
 <!-- CASO 2: ACIERTO -->
-<div class="case-card">
-  <div class="case-header">
-    <div class="avatar" style="background:#fef3c7;color:#92400e;">CR</div>
-    <div class="case-meta">
-      <p class="case-name">Carlos Ríos <span style="font-size: 0.8em; color: #666;">(ID: 33913)</span></p>
-      <p class="case-role">Mejoras del hogar · 10 años antig. · DTI: 13.10%</p>
+<div class="case-card" style="font-family: sans-serif; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; max-width: 600px; margin-bottom: 20px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+  <div class="case-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+    <div class="avatar" style="background:#dbeafe; color:#1d4ed8; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">CR</div>
+    <div class="case-meta" style="flex-grow: 1;">
+      <p class="case-name" style="margin: 0; font-weight: bold; font-size: 1.1em;">Carlos Ríos <span style="font-size: 0.8em; color: #666; font-weight: normal;">(ID: 232653)</span></p>
+      <p class="case-role" style="margin: 0; font-size: 0.85em; color: #4b5563;">Propósito: Tarjeta de Crédito · Int: 10.49% · DTI: 14.14%</p>
     </div>
-    <span class="badge badge-low">Bajo riesgo</span>
+    <span class="badge" style="background:#dbeafe; color:#1d4ed8; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase;">Bajo riesgo</span>
   </div>
   <div class="case-body">
-    <div class="case-context">
-      <p>Carlos buscaba financiamiento para <strong>remodelar su casa</strong>. Su perfil destaca por una excelente estabilidad laboral (10 años en la empresa) y un endeudamiento controlado.</p>
-      <p>El sistema le asignó <strong>661 puntos</strong>. Aunque está cerca del límite del segmento, su trayectoria profesional pesó positivamente en la decisión final del algoritmo.</p>
+    <div class="case-context" style="font-size: 0.9em; color: #374151; line-height: 1.5; margin-bottom: 15px;">
+      <p>Carlos presenta un perfil equilibrado. El propósito de <strong>tarjeta de crédito</strong> con una tasa de interés baja (10.49%) fue un factor determinante para su calificación positiva.</p>
+      <p>Alcanzó un score de <strong>616 puntos</strong>. Su utilización revolvente moderada del 47.80% confirmó que mantiene un control responsable sobre sus líneas de crédito actuales.</p>
     </div>
-    <div class="case-metrics">
-      <div class="metric-row">
-        <span class="metric-label">Score crediticio</span>
-        <span class="metric-value">661 pts</span>
+    <div class="case-metrics" style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+      <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Score crediticio</span>
+        <span class="metric-value" style="font-weight: bold;">616 pts</span>
       </div>
-      <div class="score-bar-wrap">
-        <div class="score-track"><div class="score-fill" style="width:65%;background:#f59e0b;"></div></div>
-        <div class="score-labels"><span>300</span><span>600</span><span>850</span></div>
+      <div class="score-bar-wrap" style="margin-bottom: 12px;">
+        <div class="score-track" style="background: #e5e7eb; height: 8px; border-radius: 4px; position: relative;">
+          <div class="score-fill" style="width:57%; background:#3b82f6; height: 100%; border-radius: 4px;"></div>
+        </div>
+        <div class="score-labels" style="display: flex; justify-content: space-between; font-size: 0.7em; color: #9ca3af; margin-top: 4px;"><span>300</span><span>600</span><span>850</span></div>
       </div>
-      <div class="metric-row">
-        <span class="metric-label">Segmento detectado</span>
-        <span class="metric-value" style="color:#1d4ed8;">Bajo Riesgo</span>
+      <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Segmento detectado</span>
+        <span class="metric-value" style="color:#1d4ed8; font-weight: bold;">Bajo Riesgo</span>
       </div>
-      <div class="metric-row">
-        <span class="metric-label">Resultado real</span>
-        <span class="metric-value" style="color:#166534;">Buen pagador</span>
+      <div class="metric-row" style="display: flex; justify-content: space-between; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Resultado real</span>
+        <span class="metric-value" style="color:#166534; font-weight: bold;">Buen pagador</span>
       </div>
     </div>
   </div>
-  <div class="verdict">
-    <div class="verdict-icon icon-ok">✓</div>
-    <span><strong>ACIERTO:</strong> El modelo premió la antigüedad de Carlos. La predicción fue certera, demostrando que la estabilidad laboral sigue siendo uno de los pilares de la solvencia.</span>
+  <div class="verdict" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: flex-start; font-size: 0.85em;">
+    <div class="verdict-icon" style="color: #166534; font-weight: bold;">✓</div>
+    <span><strong>ACIERTO:</strong> El modelo identificó correctamente que Carlos es un perfil solvente. La combinación de baja tasa y DTI moderado predijeron con éxito su buen comportamiento de pago.</span>
   </div>
 </div>
 
-<!-- CASO 3: ERROR -->
-<div class="case-card">
-  <div class="case-header">
-    <div class="avatar" style="background:#fee2e2;color:#991b1b;">AP</div>
-    <div class="case-meta">
-      <p class="case-name">Alejandra Paredes <span style="font-size: 0.8em; color: #666;">(ID: 723670)</span></p>
-      <p class="case-role">Pequeño negocio · 4 años antig. · DTI: 12.68%</p>
+<!-- CASO 3: ACIERTO -->
+<div class="case-card" style="font-family: sans-serif; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; max-width: 600px; margin-bottom: 20px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+  <div class="case-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+    <div class="avatar" style="background:#fef3c7; color:#92400e; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">AP</div>
+    <div class="case-meta" style="flex-grow: 1;">
+      <p class="case-name" style="margin: 0; font-weight: bold; font-size: 1.1em;">Alejandra Paredes <span style="font-size: 0.8em; color: #666; font-weight: normal;">(ID: 182558)</span></p>
+      <p class="case-role" style="margin: 0; font-size: 0.85em; color: #4b5563;">Propósito: Tarjeta de Crédito · Utilización: 28.90% · DTI: 17.45%</p>
     </div>
-    <span class="badge badge-high">Riesgo alto</span>
+    <span class="badge" style="background:#fef3c7; color:#92400e; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase;">Riesgo medio</span>
   </div>
   <div class="case-body">
-    <div class="case-context">
-      <p>Alejandra solicitó un crédito para su <strong>negocio propio</strong>. A pesar de tener un DTI moderado y 4 años de experiencia, el propósito del crédito (Small Business) es históricamente uno de los más riesgosos en el dataset.</p>
-      <p>El score cayó a <strong>613 puntos</strong>, situándola en Riesgo Alto. Lamentablemente, Alejandra no pudo cumplir con sus obligaciones financieras.</p>
+    <div class="case-context" style="font-size: 0.9em; color: #374151; line-height: 1.5; margin-bottom: 15px;">
+      <p>Alejandra muestra una excelente gestión de su crédito con una <strong>utilización de solo el 28.90%</strong>. No obstante, una tasa del 15.31% y un DTI del 17.45% la mantienen en una zona cautelosa.</p>
+      <p>El scorecard le asignó <strong>611 puntos</strong>, ubicándola en Riesgo Medio. Es un perfil que, aunque cumple, posee métricas que sugieren un monitoreo moderado frente a cambios económicos.</p>
     </div>
-    <div class="case-metrics">
-      <div class="metric-row">
-        <span class="metric-label">Score crediticio</span>
-        <span class="metric-value">613 pts</span>
+    <div class="case-metrics" style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+      <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Score crediticio</span>
+        <span class="metric-value" style="font-weight: bold;">611 pts</span>
       </div>
-      <div class="score-bar-wrap">
-        <div class="score-track"><div class="score-fill" style="width:56%;background:#ef4444;"></div></div>
-        <div class="score-labels"><span>300</span><span>600</span><span>850</span></div>
+      <div class="score-bar-wrap" style="margin-bottom: 12px;">
+        <div class="score-track" style="background: #e5e7eb; height: 8px; border-radius: 4px; position: relative;">
+          <div class="score-fill" style="width:56%; background:#f59e0b; height: 100%; border-radius: 4px;"></div>
+        </div>
+        <div class="score-labels" style="display: flex; justify-content: space-between; font-size: 0.7em; color: #9ca3af; margin-top: 4px;"><span>300</span><span>600</span><span>850</span></div>
       </div>
-      <div class="metric-row">
-        <span class="metric-label">Segmento detectado</span>
-        <span class="metric-value" style="color:#991b1b;">Riesgo Alto</span>
+      <div class="metric-row" style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Segmento detectado</span>
+        <span class="metric-value" style="color:#92400e; font-weight: bold;">Riesgo Medio</span>
       </div>
-      <div class="metric-row">
-        <span class="metric-label">Resultado real</span>
-        <span class="metric-value" style="color:#991b1b;">Mal pagador</span>
+      <div class="metric-row" style="display: flex; justify-content: space-between; font-size: 0.85em;">
+        <span class="metric-label" style="color: #6b7280;">Resultado real</span>
+        <span class="metric-value" style="color:#166534; font-weight: bold;">Buen pagador</span>
       </div>
     </div>
   </div>
-  <div class="verdict">
-    <div class="verdict-icon icon-fail">✗</div>
-    <span><strong>ALERTA DE RIESGO:</strong> Aunque el scorecard identificó el peligro (Riesgo Alto), este caso se marca como "Error" en la predicción binaria si el umbral de decisión no fue lo suficientemente estricto para evitar el otorgamiento.</span>
+  <div class="verdict" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb; display: flex; gap: 10px; align-items: flex-start; font-size: 0.85em;">
+    <div class="verdict-icon" style="color: #166534; font-weight: bold;">✓</div>
+    <span><strong>ACIERTO:</strong> El modelo fue conservador pero acertado. La baja utilización fue el factor clave que permitió a Alejandra mantener su estatus de buen pagador pese a la tasa intermedia.</span>
   </div>
 </div>
 
@@ -291,11 +296,11 @@ El modelo de riesgo crediticio no opera en el vacío: detrás de cada predicció
 
 Los casos presentados ilustran tres lecciones clave para interpretar los resultados de nuestro scorecard:
 
-**1.** Un puntaje alto como el de **María (686 pts)** indica una probabilidad estadística muy alta de éxito basada en su bajo endeudamiento. El modelo permite que la entidad "apueste" con confianza por perfiles donde los datos muestran una ruta clara hacia el cumplimiento, optimizando los tiempos de respuesta.
+**1.** El caso de **María (590 pts)** nos recuerda que el modelo no es infalible y tiende a ser conservador ante señales de alerta agresivas. Aunque su bajísimo endeudamiento (DTI: 2.05%) sugería solvencia, la **tasa de interés del 24%** y una utilización de crédito al tope actuaron como "banderas rojas" que arrastraron su score al segmento de Riesgo Alto. Este "Error" en la predicción real nos enseña que existen perfiles con hábitos de uso de crédito agresivos que, sin embargo, mantienen una disciplina de pago impecable.
 
-**2.** El caso de **Carlos (661 pts)** demuestra que el modelo no se fija en una sola variable. Aunque su relación de deuda (DTI) era más alta que la de María, su **estabilidad laboral de 10 años** actuó como un contrapeso positivo. El scorecard balancea estos factores de forma objetiva para no excluir a clientes que, aunque no son perfectos, son financieramente estables.
+**2.** El puntaje de **Carlos (616 pts)** demuestra la importancia de la moderación. A diferencia de María, Carlos no presenta valores extremos: su tasa es baja y su uso del crédito está equilibrado. El modelo lo identifica como **Bajo Riesgo** no porque sea un cliente perfecto, sino porque su perfil carece de los picos de volatilidad que suelen preceder a un impago. Es el ejemplo claro de cómo la estabilidad en las variables clave (Tasa e Ingresos) construye un score sólido.
 
-**3.** El caso de **Alejandra (613 pts)** subraya la importancia de detectar variables de alto impacto como el "Propósito del Crédito". Al identificar que los préstamos para *Small Business* tienen una mayor tasa de mora, el modelo asignó un **Riesgo Alto** de forma preventiva. Esto permite a la entidad proteger su capital o exigir garantías adicionales en segmentos donde la probabilidad de impago es real y medible. Aunque el modelo acertó al clasificar a Alejandra como de alto riesgo, si la entidad decide otorgar el crédito sin medidas de mitigación, el resultado real de incumplimiento se convierte en un "error" desde la perspectiva de la predicción binaria. Esto resalta la necesidad de que las decisiones comerciales estén alineadas con los insights del modelo para maximizar su efectividad.
+**3.** El caso de **Alejandra (611 pts)** subraya la capacidad del modelo para detectar el equilibrio en el **Riesgo Medio**. Aunque Alejandra tiene un nivel de deuda (DTI) superior al de los otros casos, el modelo compensó este factor al detectar una **utilización de crédito muy baja (28.9%)**. Este balance objetivo permite que el scorecard no descalifique a usuarios con deudas activas, siempre y cuando demuestren que no están "al límite" de su capacidad crediticia. El acierto en este caso valida que la red aprendió a ponderar el comportamiento de gasto por encima del simple volumen de deuda.
 
 ## Referencias 
 

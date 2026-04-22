@@ -1,0 +1,164 @@
+{
+    "loan_amnt": {
+        "tipo": "numerico",
+        "min": 500.0,
+        "max": 35000.0,
+        "media": 13610.4822552415
+    },
+    "term": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "int_rate": {
+        "tipo": "numerico",
+        "min": 5.32,
+        "max": 28.99,
+        "media": 13.876002271627007
+    },
+    "annual_inc": {
+        "tipo": "numerico",
+        "min": 1896.0,
+        "max": 8706582.0,
+        "media": 72391.72810907534
+    },
+    "dti": {
+        "tipo": "numerico",
+        "min": 0.0,
+        "max": 57.14,
+        "media": 16.675701560347072
+    },
+    "inq_last_6mths": {
+        "tipo": "numerico",
+        "min": 0.0,
+        "max": 33.0,
+        "media": 0.8863516180687446
+    },
+    "revol_util": {
+        "tipo": "numerico",
+        "min": 0.0,
+        "max": 892.3,
+        "media": 54.49328201690686
+    },
+    "home_ownership_MORTGAGE": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "home_ownership_OTHER": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "home_ownership_OWN": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "home_ownership_RENT": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_credit_card": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_debt_consolidation": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_educational": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_home_improvement": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_house": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_major_purchase": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_medical": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_moving": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_other": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_renewable_energy": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_small_business": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_vacation": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    },
+    "purpose_wedding": {
+        "tipo": "binario",
+        "valores_permitidos": [
+            0,
+            1
+        ]
+    }
+}

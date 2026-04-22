@@ -174,11 +174,11 @@ Tras el análisis descriptivo y de correlación, se definieron las variables y c
 | Categoría | Variables / Casos Específicos | Justificación Técnica Post-EDA |
 | :--- | :--- | :--- |
 | **Baja Variabilidad** | `pub_rec`, `delinq_2yrs` | La inmensa mayoría de los registros están en cero. La diferencia en las medias es estadísticamente despreciable para separar grupos con claridad. |
-| **Redundancia / Colinealidad** | `open_acc`, `total_acc` | Sus distribuciones (violines) son prácticamente idénticas. Mantener ambas aporta información redundante que no mejora la discriminación del riesgo. |
-| **Insignificancia Estadística** | `pymnt_plan`, `application_type` | Presentan un desbalance extremo (n < 10 en categorías minoritarias). El modelo podría sobreajustarse a casos anecdóticos en lugar de aprender patrones reales. |
-| **Categorías con n bajo** | `home_ownership` (**ANY**, **NONE**) | Categorías con volumen insuficiente (**ANY** n=1, **NONE** n=48) que no permiten una generalización confiable. Se eliminan para limpiar el ruido en las variables categóricas. |
-| **Nulo Poder Predictivo** | `emp_length` | El análisis de tasas de incumplimiento demostró que la mora es constante (~21.9%) independientemente de la antigüedad laboral. No ayuda a distinguir perfiles. |
-| **Ruido Administrativo** | `initial_list_status` | Aunque presenta una diferencia sutil, responde más a procesos internos de asignación de fondos que a una característica de riesgo del solicitante. |
+| **Redundancia / Colinealidad** | `open_acc`, `total_acc` | Sus distribuciones de violín son prácticamente idénticas. Mantener ambas aporta información redundante y ruido innecesario al modelo. |
+| **Insignificancia Estadística** | `pymnt_plan`, `application_type` | Presentan un desbalance extremo con menos de 10 casos en categorías minoritarias. El modelo podría sobreajustarse a casos anecdóticos. |
+| **Sesgo de Selección Administrativa** | `verification_status` (`Verified`, `Source Verified`) | Aunque muestran diferencias en mora, estas responden a procesos internos del banco (escrutinio a perfiles dudosos) y no a la capacidad de pago intrínseca del cliente. Su eliminación reduce la fricción en la recolección de datos. |
+| **Nulo Poder Predictivo** | `emp_length` | El análisis demostró que la tasa de mora es constante (~21.9%) independientemente de la antigüedad laboral. No ayuda a distinguir entre "buenos" y "malos" pagadores. |
+| **Ruido Administrativo** | `initial_list_status`, `home_ownership` (**ANY**, **NONE**) | Categorías con volumen insuficiente o que responden a la logística interna de la plataforma financiera, sin valor predictivo real sobre el comportamiento del usuario. |
 
 </div>
 
