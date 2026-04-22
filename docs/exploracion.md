@@ -65,7 +65,7 @@ Para codificar las variables categóricas, primero validamos si una variable es 
 | **`emp_length`** | String ("10+ years") | **Ordinal (0 a 10)** | Representa estabilidad laboral. "10+" es el valor máximo y "< 1 year" el mínimo. Se mapea a una escala lineal. |
 | **`verification_status`** | String | **Nominal (One-Hot)** | Aunque hay niveles (Verified vs Not), no hay una escala numérica lineal clara de riesgo entre ellos. |
 | **`home_ownership`** | String | **Nominal (One-Hot)** | No hay un orden natural. Por ejemplo, "RENT" no es "mejor" que "MORTGAGE" en términos de riesgo. |
-| **`purpose`** / **`addr_state`** | String | **Nominal (One-Hot)** | Son categorías. No hay un orden lógico entre ellas. |
+| **`purpose`** | String | **Nominal (One-Hot)** | Son categorías. No hay un orden lógico entre ellas. |
 | **`pymnt_plan`** / **`initial_list_status`** / **`application_type`** | String | **Nominal (One-Hot)** | Son banderas (flags) binarias o de estado. |
 
 </div>
@@ -83,11 +83,11 @@ Uno de los hallazgos más críticos del análisis descriptivo es la distribució
     <p><em>Figura 1. Distribución de la variable objetivo</em></p>
 </div>
 
-De la Figura 1 se observa que hay aproximadamente **3.6 veces más buenos pagadores** que malos pagadores. Este desbalance requiere estrategias específicas de evaluación (como F1-Score o AUC-ROC) en lugar de la precisión simple (Accuracy).*
+De la Figura 1 se observa que hay aproximadamente **3.6 veces más buenos pagadores** que malos pagadores. Este desbalance requiere estrategias específicas de evaluación (como F1-Score o AUC-ROC) en lugar de la precisión simple (Accuracy). Además, el modelo deberá enfocarse en maximizar el **Recall** para los malos pagadores, ya que el costo de un falso negativo (no detectar a un mal pagador) es mucho mayor que el de un falso positivo (rechazar a un buen pagador).
 
 ### 2.2 Análisis de Variables Numéricas vs Target
 
-A continuación, se analiza la distribución de las variables clave mediante gráficos de violín, los cuales superan las limitaciones del boxplot tradicional al mostrar la densidad de probabilidad de los datos. Esta visualización es fundamental porque permite identificar no solo los cuartiles, sino también las "panzas" o concentraciones donde se agrupan la mayoría de los usuarios. Variables que muestren formas claramente desplazadas o diferentes entre ambos grupos, son los mejores predictores para nuestra Red Neuronal, mientras que aquellas con siluetas idénticas sugieren una baja capacidad de discriminación.
+A continuación, se analiza la distribución de las variables clave mediante gráficos de violín, los cuales superan las limitaciones del boxplot tradicional al mostrar la densidad de probabilidad de los datos. Esta visualización es fundamental porque permite identificar no solo los cuartiles, sino también las concentraciones donde se agrupan la mayoría de los usuarios. Variables que muestren formas claramente desplazadas o diferentes entre ambos grupos, son los mejores predictores para nuestra Red Neuronal, mientras que aquellas con siluetas idénticas sugieren una baja capacidad de discriminación.
 
 <div style="text-align: center;">
     <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig2_numericas_vs_target.png" width="700" />
@@ -96,11 +96,11 @@ A continuación, se analiza la distribución de las variables clave mediante gr�
 
 Al analizar la Figura 2, se pueden sacar las siguientes conclusiones sobre el poder de separación de cada variable:
 
-* **int_rate (Tasa de Interés):** La separación entre los "violines" es la más pronunciada del conjunto. La densidad de los malos pagadores se concentra claramente por encima del 15%, mientras que los buenos pagadores tienen su mayor volumen cerca del 12%. Es una señal limpia y potente: el riesgo percibido por el mercado (reflejado en la tasa) es un predictor excelente del riesgo real.
+* **int_rate (Tasa de Interés):** La separación entre los "violines" es la más pronunciada del conjunto. La densidad de los malos pagadores se concentra en el 16%, mientras que los buenos pagadores tienen su mayor volumen cerca del 13%. Es una señal de que el riesgo percibido por el mercado (reflejado en la tasa) es un predictor excelente del riesgo real.
 
-* **dti (Relación Deuda/Ingreso):** Muestra una separación visualmente significativa. El violín de los malos pagadores es notablemente más "ancho" en la parte superior (entre 20% y 30%) en comparación con los buenos pagadores. Esto valida que la carga financiera es un motor de incumplimiento, aunque menos drástico que la tasa de interés.
+* **dti (Relación Deuda/Ingreso):** Muestra una separación visualmente significativa. El violín de los malos pagadores es notablemente más "ancho" en la parte superior en comparación con los buenos pagadores. Esto valida que la carga financiera es un motor de incumplimiento, aunque menos drástico que la tasa de interés.
 
-* **annual_inc (Ingreso Anual):** Gracias al zoom al 99%, ahora vemos que aunque los buenos pagadores tienen una "panza" más prominente en rangos de ingresos altos, la superposición de los cuerpos de ambos violines es masiva. Esto confirma que **el ingreso por sí solo no garantiza el pago**, lo que lo hace una variable de soporte, pero no de decisión primaria.
+* **annual_inc (Ingreso Anual):** Aunque los buenos pagadores tienen una concentración mayor en rangos de ingresos altos, la superposición de los cuerpos de ambos violines es masiva. Esto confirma que **el ingreso por sí solo no garantiza el pago**, lo que lo hace una variable de soporte, pero no de decisión primaria.
 
 * **revol_util (Utilización Revolvente):** Los malos pagadores tienen una distribución mucho más uniforme hacia arriba, mientras que los buenos pagadores están "pesados" en la base (uso bajo). Es una variable que aporta un matiz importante sobre el comportamiento de consumo.
 
@@ -108,7 +108,7 @@ Al analizar la Figura 2, se pueden sacar las siguientes conclusiones sobre el po
 
 Por otro lado, según la evidencia visual de estos gráficos, estas variables aportan poco o generan ruido:
 
-1.  **open_acc (Cuentas abiertas) y total_acc (Total de cuentas):** Los violines son casi **gemelos idénticos**. Las medias (mu: 10.9$ vs $11.2$) y las formas de distribución se solapan casi por completo. Podrían descartarse. Tener muchas o pocas cuentas no parece distinguir en absoluto si alguien pagará o no. Mantener ambas solo añade complejidad innecesaria al modelo (colinealidad).
+1.  **open_acc (Cuentas abiertas) y total_acc (Total de cuentas):** Los violines son casi **gemelos idénticos**. Las medias ($$\mu$$ 10.9 vs 11.2) y las formas de distribución se solapan casi por completo. Podrían descartarse. Tener muchas o pocas cuentas no parece distinguir en absoluto si alguien pagará o no.
 
 2.  **pub_rec (Registros públicos negativos):** La distribución es casi una línea plana en cero para ambos grupos. Aunque un registro público es malo, hay tan poca variabilidad en los datos (la inmensa mayoría tiene 0) que la Red Neuronal tendrá dificultades para extraer un patrón generalizable.
 
@@ -187,7 +187,7 @@ Tras el análisis descriptivo y de correlación, se definieron las variables y c
 
 ## 3. Planteamiento de Hipótesis
 
-Tras el análisis descriptivo, formalizamos las siguientes hipótesis de riesgo basadas en las diferencias observadas entre buenos y malos pagadores. Estas hipótesis guiarán la interpretación de los resultados del modelo y la elaboración de la scorecard final:
+Tras el análisis descriptivo, formalizamos las siguientes hipótesis de riesgo basadas en las diferencias observadas entre buenos y malos pagadores.
 
 <div align="center" markdown="1">
 
@@ -199,7 +199,7 @@ Tras el análisis descriptivo, formalizamos las siguientes hipótesis de riesgo 
 | `dti` | Malos presentan mayor "ancho" entre 20% y 30%. Correlación: **0.134**. | Un DTI elevado indica poco margen de maniobra ante imprevistos, haciendo que el nuevo crédito sea difícil de sostener frente al ingreso. |
 | `inq_last_6mths`|Buenos pagadores se concentran casi totalmente en 0 consultas. Correlación: **0.053**. | Consultas recientes indican una necesidad urgente de liquidez, actuando como una señal de alerta de inestabilidad financiera. |
 | `revol_util` | Malos usan sus líneas de crédito de forma agresiva y constante. | Un uso alto de líneas rotativas sugiere que el cliente vive al límite de su capacidad y usa el crédito para gastos corrientes. |
-| `annual_inc` | Buenos pagadores tienen una densidad más prominente en rangos altos ($$\mu$$: \$$74k$$). | Ingresos altos actúan como colchón. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
+| `annual_inc` | Buenos pagadores tienen una densidad más prominente en rangos altos $$\mu$$: \$$74k$$. | Ingresos altos actúan como colchón. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
 | `term` | 60 meses duplica la tasa de mora vs 36 meses (34% vs 18%). | Créditos a largo plazo están sujetos a más eventos de vida (despido, enfermedad), aumentando el riesgo de incumplimiento. |
 
 </div>

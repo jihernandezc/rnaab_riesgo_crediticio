@@ -22,7 +22,7 @@ Antes de sumergirnos en la complejidad de las redes neuronales, implementamos un
 El entrenamiento se configuró con parámetros específicos para garantizar la estabilidad y el manejo del desbalance:
 
 *   **Solver `lbfgs` (Limited-memory Broyden–Fletcher–Goldfarb–Shanno):** Seleccionamos este optimizador porque es altamente eficiente para problemas de clasificación multivariable en conjuntos de datos grandes. Pertenece a la familia de métodos de "cuasi-Newton" y utiliza una cantidad limitada de memoria computacional para aproximar la curvatura de la función de pérdida, lo que permite una convergencia más rápida que el descenso de gradiente estándar.
-*   **`max_iter=1000`:** Dado que el dataset tiene 94 variables tras la codificación, aumentamos el límite de iteraciones para asegurar que el algoritmo encuentre el mínimo global de la función de costo y no se detenga prematuramente (evitando errores de "non-convergence").
+*   **`max_iter=1000`:** Ponemos este límite de iteraciones para asegurar que el algoritmo encuentre el mínimo global de la función de costo y no se detenga prematuramente (evitando errores de "non-convergence").
 *   **`class_weight='balanced'`:** Esta es quizás la decisión más crítica. El dataset original es desbalanceado (78% buenos vs 22% malos). Sin este parámetro, el modelo tendería a predecir que "todos son buenos" para maximizar el acierto simple. Al balancear, el algoritmo aplica una **penalización mayor** a los errores cometidos sobre la clase minoritaria (los malos pagadores), forzando al modelo a aprender sus características distintivas.
 
 ### Resultados
@@ -72,9 +72,9 @@ $$Peso = \frac{N_{total}}{k \cdot n_{clase}}$$
 </div>
 
 Donde:
-*   **$N_{total}$**: Es el número total de registros en el set de entrenamiento (**214,824**).
-*   **$k$**: Es el número de clases (**2**: Bueno y Malo).
-*   **$n_{clase}$**: Es la cantidad de registros que hay de esa clase específica.
+*   **$$N_{total}$$**: Es el número total de registros en el set de entrenamiento (**214,824**).
+*   **$$k$$**: Es el número de clases (**2**: Bueno y Malo).
+*   **$$n_{clase}$$**: Es la cantidad de registros que hay de esa clase específica.
 
 En nuestro caso, la distribución era:
 *   **Buenos pagadores (0):** 167,769 registros.
@@ -111,8 +111,6 @@ Al aplicar estos pesos, la función de pérdida (**Binary Crossentropy**) se vue
 Diseñamos una arquitectura de modelo **secuencial** compuesta por una capa de entrada de **128 neuronas**, seguida de dos capas ocultas de **64 y 32 neuronas** respectivamente. Todas las capas son **densas**, lo que significa que cada neurona está conectada con todas las de la capa siguiente para maximizar el flujo de información. Para las capas internas, utilizamos la función de activación **ReLU**, que ayuda a mitigar el problema de desvanecimiento del gradiente, mientras que en la capa de salida empleamos una función **Sigmoide**. Esta última nos entrega un valor entre 0 y 1, interpretado como la probabilidad de incumplimiento, permitiendo graduar la certeza del modelo sobre cada cliente.
 
 Configuramos una **tasa de aprendizaje de 0.001**, un valor equilibrado para asegurar que el modelo converja de forma estable sin colapsar la memoria ni quedar atrapado prematuramente en un mínimo local. Para combatir el **sobreentrenamiento (overfitting)**, implementamos un **ratio de dropout del 30%** en cada capa, "apagando" neuronas aleatoriamente durante el entrenamiento para evitar que el modelo simplemente memorice los datos. Adicionalmente, aplicamos **Batch Normalization** para normalizar las activaciones entre capas, lo que estabiliza el proceso y acelera la convergencia.
-
-### Entrenamiento y Resultados Iniciales
 
 Compilamos la red utilizando el optimizador **Adam** y la función de pérdida **binary_crossentropy**, ideal para nuestro objetivo binario. Implementamos dos **Callbacks** estratégicos:
 *   **EarlyStopping:** Detiene el entrenamiento si el AUC de validación no mejora tras 10 épocas, restaurando los mejores pesos encontrados.
@@ -164,7 +162,6 @@ Con un dataset balanceado, el siguiente reto fue encontrar la estructura de red 
 2.  **Dropout:** Probamos valores de 0.3, 0.4 y 0.5 para encontrar el punto exacto donde el modelo deja de memorizar (overfitting) y comienza a generalizar.
 3.  **Learning Rate (Tasa de aprendizaje):** Evaluamos 0.001 y 0.0005 para ajustar la velocidad de convergencia.
 
-**Hallazgos de la Optimización:**
 La combinación ganadora fue la arquitectura **"Muy ancha"**, compuesta por **dos capas ocultas de 512 y 256 neuronas**. Se determinó que un **dropout del 0.5** era necesario para regularizar una red tan ancha, junto con una **tasa de aprendizaje de 0.001**. Esta configuración alcanzó un **AUC-ROC de 0.6985** y un F1-Score de 0.4428.
 
 ### Entrenamiento del Modelo Optimizado
@@ -172,7 +169,6 @@ Utilizando la mejor combinación encontrada, procedimos a entrenar el modelo def
 *   **Paciencia de 15 épocas** en el EarlyStopping para permitir que la red explorara mejor el espacio de soluciones.
 *   **Batch size de 1024**, duplicando el anterior para aprovechar la mayor cantidad de datos generados por SMOTE y estabilizar las estimaciones del gradiente.
 
-### Ajuste del Umbral de Clasificación Óptimo
 Por defecto, una red neuronal clasifica a un cliente como "mal pagador" si la probabilidad es mayor a 0.5 (50%). Sin embargo, en riesgo crediticio, este umbral no siempre es el más rentable para el negocio.
 
 <div style="text-align: center;">
@@ -190,7 +186,7 @@ Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el pu
 
 | Métrica | Clase / Promedio | Precisión | Recall | F1-Score | Soporte |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Clase 0** | Buen pagador | 0.87 | 0.65 | 0.75 | 41,942 |
+| **Clase 0** | Buen pagador | 0.87 | 0.65 | 0.74 | 41,942 |
 | **Clase 1** | Mal pagador | 0.34 | 0.64 | 0.45 | 11,764 |
 | **Exactitud** | *Accuracy* | | | **0.65** | 53,706 |
 | **Promedio Simple** | *Macro Avg* | 0.60 | 0.65 | 0.60 | 53,706 |
@@ -207,19 +203,19 @@ Realizamos un barrido de umbrales desde el 10% hasta el 90% para encontrar el pu
 
 Los resultados obtenidos con la red optimizada utilizando SMOTE, presentados en la Tabla 3 y la Figura 4, revelan los siguientes aprendizajes:
 
-*   **AUC-ROC (0.7038):** Prácticamente idéntico al modelo base y apenas **0.0062** por encima de la Regresión Logística.
+*   **AUC-ROC (0.7037):** Prácticamente idéntico al modelo base y apenas **0.0061** por encima de la Regresión Logística.
 *   **Recall (64%) y Precisión (34%) para la clase 1:** Las métricas de clasificación se mantienen estancadas en los mismos niveles que el baseline inicial.
 *   **F1-Score (0.45):** No hubo una mejora significativa en el equilibrio entre sensibilidad y precisión.
 
 ## 4. Aprendizajes del Proceso de Modelamiento
 
-Tras experimentar con técnicas como redes neuronales y el sobremuestreo sintético (**SMOTE**), el rendimiento del modelo se mantuvo en el rango de **0.703 de AUC-ROC**. Este comportamiento nos lleva a reflexionar sobre la naturaleza de los datos y la complejidad del problema:
+Tras comparar el resultado de una simple regresión logística con el de redes neuronales y el sobremuestreo sintético (**SMOTE**), el rendimiento del modelo se mantuvo en el rango de **0.70 de AUC-ROC**. Este comportamiento nos lleva a reflexionar sobre la naturaleza de los datos y la complejidad del problema:
 
-* A pesar de que la Red Neuronal con SMOTE logró el mejor desempeño (AUC: 0.7038), la mejora respecto a la Regresión Logística básica fue de apenas **0.9 puntos porcentuales**. Este fenómeno se explica mediante el ***"Flat-maximum effect"***. Según **Overstreet et al. (1992)**, en el scoring crediticio existe una robustez inherente donde modelos lineales simples suelen rendir casi a la par de modelos altamente complejos. Esto sugiere que las variables financieras tradicionales (DTI, tasa, ingresos) han entregado toda la "señal" posible, y el ruido restante no puede ser capturado solo con algoritmos más potentes.
+* A pesar de que la Red Neuronal con SMOTE logró el mejor desempeño (AUC: 0.703), la mejora respecto a la Regresión Logística básica fue de apenas **0.0061**. Este fenómeno se explica mediante el ***"Flat-maximum effect"***. Según **Overstreet et al. (1992)**, en el scoring crediticio existe una robustez inherente donde modelos lineales simples suelen rendir casi a la par de modelos altamente complejos. Esto sugiere que las variables financieras tradicionales (DTI, tasa, ingresos) han entregado toda la "señal" posible, y el ruido restante no puede ser capturado solo con algoritmos más potentes.
 
-* Desde una perspectiva de ingeniería, la implementación de arquitecturas de redes neuronales demandó un costo computacional y de mantenimiento significativamente mayor. No obstante, en el sector financiero, incluso una mejora marginal puede traducirse en ahorros millonarios. Aun así, como bien señalan **Lessmann et al. (2015)** en su estudio comparativo de algoritmos de scoring, las mejoras de las técnicas modernas sobre los modelos lineales suelen ser marginales y requieren un esfuerzo de optimización desproporcionado.
+* Desde una perspectiva de ingeniería, la implementación de arquitecturas de redes neuronales demandó un costo computacional y de mantenimiento significativamente mayor. Como bien señalan **Lessmann et al. (2015)** en su estudio comparativo de algoritmos de scoring, las mejoras de las técnicas modernas sobre los modelos lineales suelen ser marginales y requieren un esfuerzo de optimización desproporcionado.
 
-* Aunque un AUC de 0.7038 pueda parecer modesto en otras áreas de la IA, en el análisis de riesgo crediticio se considera un desempeño **"Aceptable a Bueno"**. De acuerdo con la escala de **Hosmer et al. (2013)**, un valor por encima de 0.70 indica una capacidad de discriminación adecuada para la toma de decisiones institucionales.
+* Aunque un AUC de 0.7037 pueda parecer modesto en otras áreas de la IA, en el análisis de riesgo crediticio se considera un desempeño **"Aceptable a Bueno"**. De acuerdo con la escala de **Hosmer et al. (2013)**, un valor por encima de 0.70 indica una capacidad de discriminación adecuada para la toma de decisiones institucionales.
 
 El aprendizaje más valioso de este proceso es que hemos alcanzado el límite de rendimiento con el conjunto de información disponible. El modelo funciona bien dentro de sus parámetros, pero los resultados confirman que la ventaja competitiva en el futuro no vendrá de una red neuronal más profunda, sino del enriquecimiento del dataset con nuevas fuentes de información (como datos alternativos, comportamiento digital, etc.) o la complementación con técnicas de inteligencia artificial explicable para entender mejor las decisiones del modelo.
 

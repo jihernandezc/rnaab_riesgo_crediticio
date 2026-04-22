@@ -60,7 +60,7 @@ $$\text{Score} = \text{Offset} + \text{Factor} \cdot \ln(\text{Odds})$$
 *Ecuación 4. Cálculo del Score Crediticio a partir de los Odds*
 </div>
 
-> **Nota técnica:** En el código, se aplica un truncamiento (*clip*) al resultado final para asegurar que ningún puntaje exceda los límites operativos de [300, 850], manteniendo la consistencia con los estándares de la industria.
+> **Nota:** En el código, se aplica un truncamiento (*clip*) al resultado final para asegurar que ningún puntaje exceda los límites operativos de [300, 850], manteniendo la consistencia con los estándares de la industria.
 
 ## Análisis del Score en la Población
 
@@ -72,14 +72,14 @@ Tras aplicar el modelo al conjunto de prueba, observamos lo siguiente:
 </div>
 
 ### Estadísticas Clave del Modelo:
-*   **Score Mínimo:** 528.5
-*   **Score Máximo:** 685.6
+*   **Score Mínimo:** 530.1
+*   **Score Máximo:** 702.6
 *   **Media General:** 605.0
-*   **Mediana:** 604.2
+*   **Mediana:** 604.0
 
 Como se observa en los boxplots de la **Figura 1**, aunque existe una diferencia entre las medias, esta no es tan pronunciada:
-*   **Buen pagador (Promedio):** 608.5 puntos.
-*   **Mal pagador (Promedio):** 592.7 puntos.
+*   **Buen pagador (Promedio):** 608.4 puntos.
+*   **Mal pagador (Promedio):** 592.5 puntos.
 
 Lo anterior nos permite entender por qué cuesta tanto separar a los buenos pagadores de los malos pagadores y es que sus distribuciones están solapadas en gran parte del tramo de los scores, lo cual influye en el resultado de las predicciones del modelo.
 
@@ -87,30 +87,30 @@ Lo anterior nos permite entender por qué cuesta tanto separar a los buenos paga
 
 Para que el puntaje sea útil en el día a día, dividimos a los clientes en 5 niveles de riesgo. Es importante mencionar que aunque usamos la escala tradicional de 300 a 850 puntos (FICO), los cortes los calibramos según cómo se comportaron realmente los clientes en este dataset, no por estándares externos.
 
+<div style="text-align: center;">
+    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig8_segmentacion_riesgo.png" width="900" />
+    <p><em>Figura 2. Segmentación por Nivel de Riesgo</em></p>
+</div>
+
 <div align="center" markdown="1">
 
 *Tabla 1. Segmentación de Riesgo*
 
 | Segmento | Rango de Score | % Población | Mora Observada | Acción Recomendada |
 | :--- | :---: | :---: | :---: | :--- |
-| **Muy bajo riesgo** | **> 640** | 7% | **4%** | Aprobación inmediata y tasas preferenciales. Zona de alta densidad de buenos pagadores. |
-| **Bajo riesgo** | **615 - 640** | 25.2% | **10.5%** | Aprobación estándar. El volumen de "buenos pagadores" supera ampliamente al de "malos". |
-| **Riesgo medio** | **590 - 615** | **40.5%** | **20.8%** | Zona crítica de solapamiento. Requiere validación de ingresos o garantías adicionales. |
-| **Riesgo alto** | **565 - 590** | 24.7% | **36.6** | Mayor densidad de "malos pagadores" que de "buenos". Tasas de castigo o rechazo. |
-| **Muy alto riesgo** | **< 565** | 2.6% | **57.9%** | Rechazo automático. Representa la cola izquierda donde la probabilidad de mora es máxima. |
+| **Muy bajo riesgo** | **> 650** | 2.9% | **2.4%** | Aprobación inmediata y tasas preferenciales. Zona de alta densidad de buenos pagadores. |
+| **Bajo riesgo** | **620 - 650** | 21.7% | **8.6%** | Aprobación estándar. El volumen de "buenos pagadores" supera ampliamente al de "malos". |
+| **Riesgo medio** | **590 - 620** | **48.4%** | **19.7%** | Zona crítica de solapamiento. Requiere validación de ingresos o garantías adicionales. |
+| **Riesgo alto** | **565 - 590** | 24.3% | **36.6** | Mayor densidad de "malos pagadores" que de "buenos". Tasas de castigo o rechazo. |
+| **Muy alto riesgo** | **< 565** | 2.7% | **57.6%** | Rechazo automático. Representa la cola izquierda donde la probabilidad de mora es máxima. |
 
 </div>
 
-Si comparamos estos resultados con un score crediticio tradicional (donde 640 suele ser un puntaje bajo o regular), en nuestro modelo un **640** es en realidad un puntaje **excelente**, ubicando al cliente en el segmento de **Muy Bajo Riesgo**. Esta diferencia en la escala ocurre por dos razones clave:
+Si comparamos estos resultados con un score crediticio tradicional (donde 650 suele ser un puntaje regular), en nuestro modelo un **650** es en realidad un puntaje **excelente**, ubicando al cliente en el segmento de **Muy Bajo Riesgo**. Esta diferencia en la escala ocurre por dos razones clave:
 
-1.  Los datos provienen de *peer-to-peer lending* (LendingClub), un mercado con perfiles de riesgo más volátiles que la banca hipotecaria tradicional. El modelo ha mapeado el éxito dentro de este ecosistema específico, donde alcanzar un score superior a **640** indica una solidez financiera excepcional frente al promedio de la muestra (605).
+1.  Los datos provienen de *peer-to-peer lending* (LendingClub), un mercado con perfiles de riesgo más volátiles que la banca hipotecaria tradicional. El modelo ha mapeado el éxito dentro de este ecosistema específico, donde alcanzar un score superior a **650** indica una solidez financiera excepcional frente al promedio de la muestra (605).
 
-2.  Notamos que al bajar de los **590 puntos**, entramos en el "valle de la mora". En este punto, la densidad de malos pagadores (color rojo en la Figura 1) empieza a ganar terreno rápidamente sobre los buenos pagadores. El modelo marca una frontera de seguridad clara en los **615 puntos**: por encima de este valor, la probabilidad de éxito es significativamente mayor, mientras que por debajo, el riesgo se vuelve errático y difícil de manejar.
-
-<div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/jihernandezc/rnaab_riesgo_crediticio/refs/heads/master/output/figs/fig8_segmentacion_riesgo.png" width="900" />
-    <p><em>Figura 2. Segmentación por Nivel de Riesgo</em></p>
-</div>
+2.  Notamos que al bajar de los **590 puntos**, entramos en el "valle de la mora". En este punto, la densidad de malos pagadores (color rojo en la Figura 1) empieza a ganar terreno rápidamente sobre los buenos pagadores. El modelo marca una frontera de seguridad clara en los **620 puntos**: por encima de este valor, la probabilidad de éxito es significativamente mayor, mientras que por debajo, el riesgo se vuelve errático y difícil de manejar.
 
 Como se observa en la **Figura 2a**, el modelo logra una distribución balanceada. La mayoría de los clientes se sitúan en la zona media y baja de riesgo, permitiendo un flujo de caja saludable, mientras que la **Figura 2b** valida la potencia del modelo: a medida que el score baja, la columna roja de incumplimiento crece de forma exponencial, confirmando que el algoritmo realmente sabe quién va a fallar.
 
@@ -123,7 +123,7 @@ Como en las Redes Neuronales no podemos ver los coeficientes así de fácil como
     <p><em>Figura 3. Impacto de Variables en el Score</em></p>
 </div>
 
-De la **Figura 3** se desprende que **`int_rate` (Tasa de interés):** es el factor más crítico para determinar el riesgo crediticio, seguida de **`annual_inc` (Ingreso anual);** el modelo depende de este dato para entender la capacidad de respuesta económica del cliente. El tercer lugar lo ocupa **`loan_amnt` (Monto del préstamo)** ya que la red le da mucho peso a qué tan grande es la deuda que se está asumiendo. **`dti` y `term`** son las siguientes en la lista. El modelo las usa para medir la presión financiera mensual y el tiempo de exposición al riesgo (3 o 5 años).
+De la **Figura 3** se desprende que **`int_rate` (Tasa de interés):** es el factor más crítico para determinar el riesgo crediticio, seguida de **`annual_inc` (Ingreso anual);** el modelo depende de este dato para entender la capacidad de respuesta económica del cliente. El tercer lugar lo ocupa **`loan_amnt` (Monto del préstamo)** ya que la red le da mucho peso a qué tan grande es la deuda que se está asumiendo. **`dti` y `term`** son las siguientes en la lista. El modelo las usa para medir la presión financiera mensual y el tiempo de exposición al riesgo.
 
 # Casos de Uso
 
@@ -166,73 +166,70 @@ El modelo de riesgo crediticio no opera en el vacío: detrás de cada predicció
 
 <div class="cases-grid">
 
-<!-- CASO 1: ERROR -->
+<!-- CASO 1: ACIERTO -->
 
 <div class="case-card">
   <div class="case-header">
-    <div class="avatar" style="background:#fee2e2;color:#991b1b;">ML</div>
+    <div class="avatar" style="background:#fef3c7;color:#92400e;">C1</div>
     <div class="case-meta">
-      <p class="case-name">María López <span style="font-size: 0.8em; color: #666;">(ID: 118663)</span></p>
-      <p class="case-role">Other · Utilización: 82.80% · DTI: 2.05%</p>
+      <p class="case-name">María López <span style="font-size: 0.8em; color: #666;">(ID: 378291)</span></p>
+      <p class="case-role">Debt consolidation · Utilización: 56.90% · DTI: 20.64%</p>
     </div>
-    <span class="badge badge-high">Riesgo alto</span>
+    <span class="badge badge-medium">Riesgo medio</span>
   </div>
   <div class="case-body">
     <div class="case-context">
-      <p>María solicitó un crédito con propósito clasificado como <strong>"Other"</strong>, categoría poco informativa y generalmente asociada a mayor incertidumbre.</p>
-      <p>A pesar de su <strong>alta utilización de crédito (82.80%)</strong>, el modelo asignó un score de <strong>590 puntos</strong>, ubicándola en riesgo alto.</p>
+      <p>El solicitante buscaba consolidar deudas, presentando un nivel de endeudamiento relativamente alto (<strong>DTI: 20.64%</strong>) y una utilización de crédito elevada.</p>
+      <p>El modelo asignó un score de <strong>593 puntos</strong>, ubicándolo en riesgo medio, reflejando correctamente señales de vulnerabilidad financiera.</p>
     </div>
     <div class="case-metrics">
       <div class="metric-row">
         <span class="metric-label">Score crediticio</span>
-        <span class="metric-value">590 pts</span>
+        <span class="metric-value">593 pts</span>
       </div>
       <div class="score-bar-wrap">
-        <div class="score-track"><div class="score-fill" style="width:52%;background:#ef4444;"></div></div>
+        <div class="score-track"><div class="score-fill" style="width:53%;background:#f59e0b;"></div></div>
         <div class="score-labels"><span>300</span><span>600</span><span>850</span></div>
       </div>
       <div class="metric-row">
         <span class="metric-label">Segmento detectado</span>
-        <span class="metric-value" style="color:#991b1b;">Riesgo Alto</span>
+        <span class="metric-value" style="color:#f59e0b;">Riesgo Medio</span>
       </div>
       <div class="metric-row">
         <span class="metric-label">Resultado real</span>
-        <span class="metric-value" style="color:#166534;">Buen pagador</span>
+        <span class="metric-value" style="color:#991b1b;">Mal pagador</span>
       </div>
     </div>
   </div>
   <div class="verdict">
-    <div class="verdict-icon icon-fail">✗</div>
-    <span><strong>ERROR:</strong> El modelo penalizó fuertemente la alta utilización de crédito y el propósito ambiguo, pero no logró capturar que María mantenía un buen comportamiento de pago.</span>
+    <div class="verdict-icon icon-ok">✓</div>
+    <span><strong>ACIERTO:</strong> El modelo identificó correctamente el riesgo asociado a un alto nivel de endeudamiento y utilización, anticipando el incumplimiento del cliente.</span>
   </div>
-</div>
-<div align="center">
-<p></p><em>Figura 4. Error de clasificación (falso negativo) en perfil con alta utilización de crédito</em></p>
 </div>
 
 <!-- CASO 2: ACIERTO -->
 
 <div class="case-card">
   <div class="case-header">
-    <div class="avatar" style="background:#dbeafe;color:#1d4ed8;">CR</div>
+    <div class="avatar" style="background:#dbeafe;color:#1d4ed8;">C2</div>
     <div class="case-meta">
-      <p class="case-name">Carlos Ríos <span style="font-size: 0.8em; color: #666;">(ID: 232653)</span></p>
-      <p class="case-role">Credit Card · Utilización: 47.80% · DTI: 14.14%</p>
+      <p class="case-name">Carlos Peña<span style="font-size: 0.8em; color: #666;">(ID: 9388)</span></p>
+      <p class="case-role">Wedding · Utilización: 35.00% · DTI: 16.14%</p>
     </div>
     <span class="badge badge-low">Bajo riesgo</span>
   </div>
   <div class="case-body">
     <div class="case-context">
-      <p>Carlos solicitó crédito para manejo de <strong>tarjeta de crédito</strong>, con una utilización moderada y niveles de endeudamiento controlados.</p>
-      <p>El modelo le asignó <strong>616 puntos</strong>, clasificándolo correctamente dentro del segmento de bajo riesgo.</p>
+      <p>El crédito fue solicitado para un evento personal (boda), con indicadores financieros relativamente saludables: utilización moderada y DTI controlado.</p>
+      <p>El modelo asignó <strong>631 puntos</strong>, clasificando correctamente al cliente como de bajo riesgo.</p>
     </div>
     <div class="case-metrics">
       <div class="metric-row">
         <span class="metric-label">Score crediticio</span>
-        <span class="metric-value">616 pts</span>
+        <span class="metric-value">631 pts</span>
       </div>
       <div class="score-bar-wrap">
-        <div class="score-track"><div class="score-fill" style="width:58%;background:#3b82f6;"></div></div>
+        <div class="score-track"><div class="score-fill" style="width:60%;background:#3b82f6;"></div></div>
         <div class="score-labels"><span>300</span><span>600</span><span>850</span></div>
       </div>
       <div class="metric-row">
@@ -247,41 +244,38 @@ El modelo de riesgo crediticio no opera en el vacío: detrás de cada predicció
   </div>
   <div class="verdict">
     <div class="verdict-icon icon-ok">✓</div>
-    <span><strong>ACIERTO:</strong> El modelo interpretó correctamente el balance entre utilización moderada y nivel de deuda manejable, identificando a Carlos como un cliente confiable.</span>
+    <span><strong>ACIERTO:</strong> El modelo capturó adecuadamente un perfil estable, donde niveles moderados de deuda y uso del crédito indican bajo riesgo de incumplimiento.</span>
   </div>
 </div>
-<div align="center">
-<p></p><em>Figura 5. Acierto del modelo en perfil de bajo riesgo con utilización y DTI controlados </em></p>
-</div>
 
-<!-- CASO 3: ACIERTO -->
+<!-- CASO 3: ERROR -->
 
 <div class="case-card">
   <div class="case-header">
-    <div class="avatar" style="background:#dbeafe;color:#1d4ed8;">AP</div>
+    <div class="avatar" style="background:#fee2e2;color:#991b1b;">C3</div>
     <div class="case-meta">
-      <p class="case-name">Alejandra Paredes <span style="font-size: 0.8em; color: #666;">(ID: 182558)</span></p>
-      <p class="case-role">Credit Card · Utilización: 28.90% · DTI: 17.45%</p>
+      <p class="case-name">Alejandra Vanegas <span style="font-size: 0.8em; color: #666;">(ID: 104578)</span></p>
+      <p class="case-role">Debt consolidation · Utilización: 90.20% · DTI: 15.06%</p>
     </div>
-    <span class="badge badge-medium">Riesgo medio</span>
+    <span class="badge badge-high">Riesgo alto</span>
   </div>
   <div class="case-body">
     <div class="case-context">
-      <p>Alejandra presenta un perfil equilibrado con <strong>baja utilización de crédito</strong> y un nivel de endeudamiento moderado.</p>
-      <p>El score de <strong>611 puntos</strong> la ubicó en riesgo medio, reflejando correctamente un perfil con cierto nivel de exposición pero aún saludable.</p>
+      <p>El solicitante presenta una <strong>utilización extremadamente alta (90.20%)</strong>, una de las variables más penalizadas por el modelo.</p>
+      <p>Esto llevó a un score de <strong>576 puntos</strong>, clasificándolo como riesgo alto, a pesar de que su DTI se mantiene en niveles moderados.</p>
     </div>
     <div class="case-metrics">
       <div class="metric-row">
         <span class="metric-label">Score crediticio</span>
-        <span class="metric-value">611 pts</span>
+        <span class="metric-value">576 pts</span>
       </div>
       <div class="score-bar-wrap">
-        <div class="score-track"><div class="score-fill" style="width:57%;background:#f59e0b;"></div></div>
+        <div class="score-track"><div class="score-fill" style="width:50%;background:#ef4444;"></div></div>
         <div class="score-labels"><span>300</span><span>600</span><span>850</span></div>
       </div>
       <div class="metric-row">
         <span class="metric-label">Segmento detectado</span>
-        <span class="metric-value" style="color:#f59e0b;">Riesgo Medio</span>
+        <span class="metric-value" style="color:#991b1b;">Riesgo Alto</span>
       </div>
       <div class="metric-row">
         <span class="metric-label">Resultado real</span>
@@ -290,22 +284,19 @@ El modelo de riesgo crediticio no opera en el vacío: detrás de cada predicció
     </div>
   </div>
   <div class="verdict">
-    <div class="verdict-icon icon-ok">✓</div>
-    <span><strong>ACIERTO:</strong> El modelo evaluó correctamente un perfil intermedio, donde una baja utilización compensa un DTI más elevado, resultando en una predicción acertada.</span>
+    <div class="verdict-icon icon-fail">✗</div>
+    <span><strong>ERROR:</strong> El modelo sobreponderó la utilización de crédito como señal de riesgo, sin capturar otros factores compensatorios, generando un falso negativo.</span>
   </div>
 </div>
-<div align="center">
-<p></p><em>Figura 6. Acierto del modelo en perfil de riesgo intermedio con variables compensadas</em></p>
-</div>
 </div>
 
-Los casos presentados en las figuras 4, 5 y 6 ilustran tres lecciones clave para interpretar los resultados de nuestro scorecard:
+Los casos presentados anteriormente ilustran tres lecciones clave para interpretar los resultados de nuestro scorecard:
 
-**1.** El caso de **María (590 pts)** nos recuerda que el modelo no es infalible y tiende a ser conservador ante señales de alerta agresivas. Aunque su bajísimo endeudamiento (DTI: 2.05%) sugería solvencia, la **tasa de interés del 24%** y una utilización de crédito al tope actuaron como "banderas rojas" que arrastraron su score al segmento de Riesgo Alto. Este "Error" en la predicción real nos enseña que existen perfiles con hábitos de uso de crédito agresivos que, sin embargo, mantienen una disciplina de pago impecable.
+**1.** El caso de María**(593 pts)** evidencia la capacidad del modelo para identificar perfiles con señales claras de vulnerabilidad financiera. A pesar de no presentar valores extremos en una sola variable, la combinación de un **DTI elevado (20.64%)** y una utilización de crédito relativamente alta generó una clasificación de **Riesgo Medio**. Este resultado fue consistente con la realidad (mal pagador), lo que constituye un **acierto del modelo**. Este caso demuestra que el scorecard no depende únicamente de outliers, sino que puede capturar riesgos acumulativos derivados de múltiples factores moderados.
 
-**2.** El puntaje de **Carlos (616 pts)** demuestra la importancia de la moderación. A diferencia de María, Carlos no presenta valores extremos: su tasa es baja y su uso del crédito está equilibrado. El modelo lo identifica como **Bajo Riesgo** no porque sea un cliente perfecto, sino porque su perfil carece de los picos de volatilidad que suelen preceder a un impago. Es el ejemplo claro de cómo la estabilidad en las variables clave (Tasa e Ingresos) construye un score sólido.
+**2.** El caso de Carlos**(631 pts)** demuestra la importancia de la estabilidad en las variables clave. Con una **tasa de interés baja (11.49%)**, una utilización controlada (35%) y un nivel de endeudamiento manejable (**DTI: 16.14%**), el modelo clasificó correctamente al cliente como **Bajo Riesgo**. Este **acierto** refleja cómo la ausencia de señales de estrés financiero permite al scorecard identificar perfiles confiables. En este contexto, no se trata de valores excepcionalmente bajos, sino de un equilibrio general que reduce la probabilidad de incumplimiento.
 
-**3.** El caso de **Alejandra (611 pts)** subraya la capacidad del modelo para detectar el equilibrio en el **Riesgo Medio**. Aunque Alejandra tiene un nivel de deuda (DTI) superior al de los otros casos, el modelo compensó este factor al detectar una **utilización de crédito muy baja (28.9%)**. Este balance objetivo permite que el scorecard no descalifique a usuarios con deudas activas, siempre y cuando demuestren que no están "al límite" de su capacidad crediticia. El acierto en este caso valida que la red aprendió a ponderar el comportamiento de gasto por encima del simple volumen de deuda.
+**3.** El caso de Alejandra**(576 pts)** pone en evidencia una limitación del modelo frente a variables altamente penalizadas. La **utilización de crédito extremadamente alta (90.20%)** y una tasa elevada (22.20%) llevaron a clasificar al cliente como **Riesgo Alto**. Sin embargo, en la realidad se trata de un buen pagador, lo que constituye un **error (falso negativo)**. Este comportamiento sugiere que el modelo tiende a sobreponderar la utilización de crédito como señal de riesgo, sin capturar adecuadamente factores compensatorios como la disciplina de pago o la gestión efectiva de la deuda.
 
 ## Referencias 
 

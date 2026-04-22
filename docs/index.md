@@ -22,7 +22,7 @@
 
 El riesgo de crédito es, en esencia, la probabilidad de que un cliente no cumpla con sus obligaciones financieras. Para una entidad bancaria, no identificar a un "mal pagador" a tiempo se traduce en pérdidas directas de capital, mientras que rechazar a un "buen pagador" representa un costo de oportunidad significativo.
 
-El propósito de este proyecto, es utilizar el [*Credit Risk Dataset* de Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset/data) para construir un sistema que no solo prediga la probabilidad de que un individuo incumpla con sus obligaciones financieras, sino que esa predicción sea interpretable para el negocio. No buscamos una "caja negra", sino una herramienta accionable que asigne un puntaje (Scorecard) basado en el comportamiento histórico y características sociodemográficas.
+El propósito de este proyecto, es utilizar el [*Credit Risk Dataset* de Kaggle](https://www.kaggle.com/datasets/ranadeep/credit-risk-dataset/data) para construir un sistema que no solo prediga la probabilidad de que un individuo incumpla con sus obligaciones financieras, sino que esa predicción sea interpretable para el negocio.
 
 ## 2. Metodología del Proyecto
 
@@ -44,14 +44,13 @@ Identificación de patrones, valores atípicos (outliers) y relaciones entre var
 
 ### Fase V: Construcción de la Scorecard
 1.  **Traducción de Probabilidades:** Conversión de la salida sigmoide de la red neuronal en una escala de puntos (Score).
-2.  **Análisis de Atributos:** Identificación de las variables con mayor impacto en el riesgo mediante técnicas de importancia de características (SHAP o pesos del modelo).
+2.  **Análisis de Atributos:** Identificación de las variables con mayor impacto en el riesgo mediante técnicas de importancia de características.
 
 ### Fase VI: Desarrollo del Sitio Web
 1.  Integración del modelo entrenado en un entorno de ejecución.
 2.  Diseño de una interfaz intuitiva donde el usuario ingresa sus datos y recibe:
     * Su puntaje crediticio (Score).
     * Su posición relativa frente a la población general.
-3.  Gráficas comparativas 
 
 ### Fase VII: Comunicación y Difusión
 1.  **Reporte Técnico:** Documentación de cada fase del proyecto, resultados obtenidos y análisis de desempeño.
