@@ -1,3 +1,6 @@
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <div style="position: sticky; top: 0; background-color: white; padding: 10px 0; border-bottom: 1px solid #ddd; z-index: 999; text-align: center; width: 100%;">
   <a href="index.html" style="text-decoration: none;">🏠 <b>Inicio</b></a> | 
   <a href="exploracion.html" style="text-decoration: none;">🔍 <b>Exploración</b></a> |
@@ -105,7 +108,7 @@ Al analizar la Figura 2, se pueden sacar las siguientes conclusiones sobre el po
 
 Por otro lado, según la evidencia visual de estos gráficos, estas variables aportan poco o generan ruido:
 
-1.  **open_acc (Cuentas abiertas) y total_acc (Total de cuentas):** Los violines son casi **gemelos idénticos**. Las medias ($\mu: 10.9$ vs $11.2$) y las formas de distribución se solapan casi por completo. Podrían descartarse. Tener muchas o pocas cuentas no parece distinguir en absoluto si alguien pagará o no. Mantener ambas solo añade complejidad innecesaria al modelo (colinealidad).
+1.  **open_acc (Cuentas abiertas) y total_acc (Total de cuentas):** Los violines son casi **gemelos idénticos**. Las medias (mu: 10.9$ vs $11.2$) y las formas de distribución se solapan casi por completo. Podrían descartarse. Tener muchas o pocas cuentas no parece distinguir en absoluto si alguien pagará o no. Mantener ambas solo añade complejidad innecesaria al modelo (colinealidad).
 
 2.  **pub_rec (Registros públicos negativos):** La distribución es casi una línea plana en cero para ambos grupos. Aunque un registro público es malo, hay tan poca variabilidad en los datos (la inmensa mayoría tiene 0) que la Red Neuronal tendrá dificultades para extraer un patrón generalizable.
 
@@ -192,11 +195,11 @@ Tras el análisis descriptivo, formalizamos las siguientes hipótesis de riesgo 
 
 | Variable | Hallazgo | Hipótesis de Riesgo |
 | :--- | :--- | :--- |
-| `int_rate` | Malos $\mu: 16.0\%$ vs Buenos $\mu: 13.3\%$. Correlación: **0.255**. | El mercado ya identifica el riesgo; tasas altas asfixian al deudor, elevando la probabilidad de impago por carga financiera excesiva. |
+| `int_rate` | Malos $\mu$: 16.0 vs Buenos $\mu$: 13.3%. Correlación: **0.255**. | El mercado ya identifica el riesgo; tasas altas asfixian al deudor, elevando la probabilidad de impago por carga financiera excesiva. |
 | `dti` | Malos presentan mayor "ancho" entre 20% y 30%. Correlación: **0.134**. | Un DTI elevado indica poco margen de maniobra ante imprevistos, haciendo que el nuevo crédito sea difícil de sostener frente al ingreso. |
 | `inq_last_6mths`|Buenos pagadores se concentran casi totalmente en 0 consultas. Correlación: **0.053**. | Consultas recientes indican una necesidad urgente de liquidez, actuando como una señal de alerta de inestabilidad financiera. |
 | `revol_util` | Malos usan sus líneas de crédito de forma agresiva y constante. | Un uso alto de líneas rotativas sugiere que el cliente vive al límite de su capacidad y usa el crédito para gastos corrientes. |
-| `annual_inc` | Buenos pagadores tienen una densidad más prominente en rangos altos ($\mu: \$74k$). | Ingresos altos actúan como colchón. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
+| `annual_inc` | Buenos pagadores tienen una densidad más prominente en rangos altos ($\mu$: \$74k$). | Ingresos altos actúan como colchón. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
 | `term` | 60 meses duplica la tasa de mora vs 36 meses (34% vs 18%). | Créditos a largo plazo están sujetos a más eventos de vida (despido, enfermedad), aumentando el riesgo de incumplimiento. |
 
 </div>
