@@ -12,8 +12,19 @@
 
 Para facilitar el uso de nuestro modelo de riesgo crediticio, desarrollamos un sitio web interactivo que permite a los usuarios ingresar sus datos financieros y recibir una evaluación personalizada de su riesgo crediticio. Además, creamos un video promocional que resume el proyecto y destaca su relevancia en el sector financiero.
 
-<iframe width="315" height="560" src="https://youtu.be/iHfpLri8KlQ" title="Video Promocional y Contribuciones" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen> </iframe>
+<iframe 
+  width="560" 
+  height="315" 
+  src="https://www.youtube.com/embed/iHfpLri8KlQ" 
+  title="Video Promocional y Contribuciones" 
+  frameborder="0" 
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+  allowfullscreen>
+</iframe>
+
+<div align="center">
 Video Promocional y Contribuciones individuales
+</div>
 
 Accede al sitio web a través del siguiente enlace:
 
