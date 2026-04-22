@@ -195,11 +195,11 @@ Tras el análisis descriptivo, formalizamos las siguientes hipótesis de riesgo 
 
 | Variable | Hallazgo | Hipótesis de Riesgo |
 | :--- | :--- | :--- |
-| `int_rate` | Malos $\mu$: 16.0 vs Buenos $\mu$: 13.3%. Correlación: **0.255**. | El mercado ya identifica el riesgo; tasas altas asfixian al deudor, elevando la probabilidad de impago por carga financiera excesiva. |
+| `int_rate` | Malos $$\mu$$: 16.0 vs Buenos $$\mu$$: 13.3%. Correlación: **0.255**. | El mercado ya identifica el riesgo; tasas altas asfixian al deudor, elevando la probabilidad de impago por carga financiera excesiva. |
 | `dti` | Malos presentan mayor "ancho" entre 20% y 30%. Correlación: **0.134**. | Un DTI elevado indica poco margen de maniobra ante imprevistos, haciendo que el nuevo crédito sea difícil de sostener frente al ingreso. |
 | `inq_last_6mths`|Buenos pagadores se concentran casi totalmente en 0 consultas. Correlación: **0.053**. | Consultas recientes indican una necesidad urgente de liquidez, actuando como una señal de alerta de inestabilidad financiera. |
 | `revol_util` | Malos usan sus líneas de crédito de forma agresiva y constante. | Un uso alto de líneas rotativas sugiere que el cliente vive al límite de su capacidad y usa el crédito para gastos corrientes. |
-| `annual_inc` | Buenos pagadores tienen una densidad más prominente en rangos altos ($\mu$: \$74k$). | Ingresos altos actúan como colchón. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
+| `annual_inc` | Buenos pagadores tienen una densidad más prominente en rangos altos ($$\mu$$: \$$74k$$). | Ingresos altos actúan como colchón. A menor ingreso, mayor vulnerabilidad ante la volatilidad económica. |
 | `term` | 60 meses duplica la tasa de mora vs 36 meses (34% vs 18%). | Créditos a largo plazo están sujetos a más eventos de vida (despido, enfermedad), aumentando el riesgo de incumplimiento. |
 
 </div>
