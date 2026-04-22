@@ -23,3 +23,12 @@ Accede al sitio web a través del siguiente enlace:
     <img src="https://img.shields.io/badge/Streamlit-Visitar_Sitio_Web-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Visitar Sitio Web">
   </a>
 </div>
+
+El repositorio de la página web se encuentra en el siguiente enlace:
+
+<br>
+<div align="center">
+  <a href="https://github.com/tacevedooo/credit-risk-app.git" target="_blank">
+    <img src="https://img.shields.io/badge/GitHub-Ver_Repositorio_Oficial-181717?style=for-the-badge&logo=github" alt="Ver en GitHub">
+  </a>
+</div>
